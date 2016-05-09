@@ -1,4 +1,7 @@
+import com.xingshulin.singularity.PatchPlugin
+
 apply plugin: 'com.android.application'
+apply plugin: PatchPlugin
 
 android {
     compileSdkVersion 23

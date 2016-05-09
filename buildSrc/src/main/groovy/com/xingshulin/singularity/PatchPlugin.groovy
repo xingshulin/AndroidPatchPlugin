@@ -7,10 +7,8 @@ class PatchPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.afterEvaluate {
-            project.task("hello") << {
-                println "12345"
-            }
+        project.task('hello') << {
+            println 'hello world'
         }
     }
 }
