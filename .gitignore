@@ -8,3 +8,4 @@
 /build
 /captures
 buildSrc/build
+sample/src/main/gen
