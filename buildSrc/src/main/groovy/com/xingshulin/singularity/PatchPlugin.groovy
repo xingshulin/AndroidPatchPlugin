@@ -1,5 +1,7 @@
 package com.xingshulin.singularity
 
+import groovy.io.FileType
+import groovy.io.FileVisitResult
 import jdk.internal.org.objectweb.asm.ClassReader
 import jdk.internal.org.objectweb.asm.ClassVisitor
 import jdk.internal.org.objectweb.asm.ClassWriter
@@ -10,6 +12,8 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import com.xingshulin.singularity.utils.AndroidUtil
+
+import static groovy.io.FileType.FILES
 
 class PatchPlugin implements Plugin<Project> {
     HashSet<String> excludeClass
@@ -41,31 +45,41 @@ class PatchPlugin implements Plugin<Project> {
                 }
                 transformTask.doLast {
                     def inputFiles = transformTask.inputs.files
-                    def fileToHack = inputFiles.filter { file ->
-                        def fileName = file.absolutePath
-                        return fileName.endsWith(".class") &&
-                                !fileName.startsWith("com/xingshulin/singularity") &&
-                                !fileName.contains("android/support/") &&
-                                !excludeClass.any { excluded ->
-                                    return fileName.endsWith(excluded)
+                    inputFiles.each { fileOrDir ->
+                        if (fileOrDir.isDirectory()) {
+                            def dirFilter = {
+                                if (it.absolutePath.contains("com/xingshulin/singularity/"))
+                                    return FileVisitResult.SKIP_SUBTREE
+                                return FileVisitResult.CONTINUE
+                            }
+                            fileOrDir.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
+                                if (excludeClass.any { excluded ->
+                                    file.absolutePath.endsWith(excluded)
+                                }) {
+                                    return
                                 }
-                    }
-                    fileToHack.each { file ->
-                        def optClass = new File(file.getParent(), file.getName() + ".opt")
-                        FileInputStream inputStream = new FileInputStream(file)
-                        def bytes = referHackWhenInit(inputStream)
-                        FileOutputStream outputStream = new FileOutputStream(optClass)
-                        outputStream.write(bytes)
-                        inputStream.close()
-                        outputStream.close()
-                        if (file.exists()) {
-                            file.delete()
+                                processClass(file)
+                            }
                         }
-                        optClass.renameTo(file)
                     }
                 }
             }
         }
+    }
+
+    private static void processClass(File inputFile) {
+        println 'processing class ' + inputFile.absolutePath
+        def optClass = new File(inputFile.getParent(), inputFile.getName() + '.opt')
+        FileInputStream inputStream = new FileInputStream(inputFile)
+        def bytes = referHackWhenInit(inputStream)
+        FileOutputStream outputStream = new FileOutputStream(optClass)
+        outputStream.write(bytes)
+        inputStream.close()
+        outputStream.close()
+        if (inputFile.exists()) {
+            inputFile.delete()
+        }
+        optClass.renameTo(inputFile)
     }
 
     private static byte[] referHackWhenInit(InputStream inputStream) {
@@ -88,7 +102,6 @@ class PatchPlugin implements Plugin<Project> {
                 }
                 return mv;
             }
-
         };
         reader.accept(visitor, 0)
         return writer.toByteArray()
