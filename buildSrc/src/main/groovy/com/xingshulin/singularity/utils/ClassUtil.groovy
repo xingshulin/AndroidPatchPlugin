@@ -6,6 +6,7 @@ import jdk.internal.org.objectweb.asm.ClassWriter
 import jdk.internal.org.objectweb.asm.MethodVisitor
 import jdk.internal.org.objectweb.asm.Opcodes
 import jdk.internal.org.objectweb.asm.Type
+import org.apache.commons.codec.digest.DigestUtils
 
 class ClassUtil {
     static byte[] referHackWhenInit(InputStream inputStream) {
@@ -33,8 +34,7 @@ class ClassUtil {
         return writer.toByteArray()
     }
 
-    static void patchClass(File inputFile) {
-        println 'processing class ' + inputFile.absolutePath
+    static String patchClass(File inputFile) {
         def optClass = new File(inputFile.getParent(), inputFile.getName() + '.opt')
         FileInputStream inputStream = new FileInputStream(inputFile)
         def bytes = referHackWhenInit(inputStream)
@@ -46,5 +46,11 @@ class ClassUtil {
             inputFile.delete()
         }
         optClass.renameTo(inputFile)
+        return DigestUtils.shaHex(bytes)
+    }
+
+    static String guessClassName(File rootDir, File classFile) {
+        String fullClassName = classFile.absolutePath.substring(rootDir.absolutePath.length())
+        return fullClassName.substring(1)
     }
 }

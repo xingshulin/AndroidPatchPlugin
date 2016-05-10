@@ -1,17 +1,18 @@
 package com.xingshulin.singularity
 
-import com.xingshulin.singularity.utils.ClassUtil
+import com.xingshulin.singularity.utils.AndroidUtil
 import groovy.io.FileVisitResult
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import com.xingshulin.singularity.utils.AndroidUtil
 
+import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
 import static groovy.io.FileType.FILES
 
 class PatchPlugin implements Plugin<Project> {
     HashSet<String> excludeClass
+    HashMap<String, String> patchedFiles = new HashMap<>()
 
     @Override
     void apply(Project project) {
@@ -53,7 +54,7 @@ class PatchPlugin implements Plugin<Project> {
                                 }) {
                                     return
                                 }
-                                patchClass(file)
+                                patchedFiles.put(guessClassName(fileOrDir, file), patchClass(file))
                             }
                         }
                     }
