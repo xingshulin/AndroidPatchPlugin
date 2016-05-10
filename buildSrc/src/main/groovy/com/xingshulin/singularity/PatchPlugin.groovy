@@ -42,20 +42,22 @@ class PatchPlugin implements Plugin<Project> {
                 transformTask.doLast {
                     def inputFiles = transformTask.inputs.files
                     inputFiles.each { fileOrDir ->
-                        if (fileOrDir.isDirectory()) {
-                            def dirFilter = {
-                                if (it.absolutePath.contains("com/xingshulin/singularity/"))
-                                    return FileVisitResult.SKIP_SUBTREE
-                                return FileVisitResult.CONTINUE
+                        if (fileOrDir.isFile()) {
+                            println fileOrDir.absolutePath + ' is skipped.'
+                            return
+                        }
+                        def dirFilter = {
+                            if (it.absolutePath.contains("com/xingshulin/singularity/"))
+                                return FileVisitResult.SKIP_SUBTREE
+                            return FileVisitResult.CONTINUE
+                        }
+                        fileOrDir.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
+                            if (excludeClass.any { excluded ->
+                                file.absolutePath.endsWith(excluded)
+                            }) {
+                                return
                             }
-                            fileOrDir.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
-                                if (excludeClass.any { excluded ->
-                                    file.absolutePath.endsWith(excluded)
-                                }) {
-                                    return
-                                }
-                                patchedFiles.put(guessClassName(fileOrDir, file), patchClass(file))
-                            }
+                            patchedFiles.put(guessClassName(fileOrDir, file), patchClass(file))
                         }
                     }
                 }
