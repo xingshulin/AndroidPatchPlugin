@@ -60,6 +60,9 @@ class PatchPlugin implements Plugin<Project> {
                             patchedFiles.put(guessClassName(fileOrDir, file), patchClass(file))
                         }
                     }
+                    def patchedTxt = new File("${project.buildDir}/outputs/patch/patch.${variant.dirName}.txt")
+                    if (!patchedTxt.getParentFile().exists()) patchedTxt.getParentFile().mkdirs()
+                    patchedTxt.text = patchedFiles.inspect()
                 }
             }
         }
