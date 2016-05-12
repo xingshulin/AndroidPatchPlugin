@@ -1,11 +1,11 @@
 package com.xingshulin.singularity
 
-import com.xingshulin.singularity.utils.AndroidUtil
 import groovy.io.FileVisitResult
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
+import static com.xingshulin.singularity.utils.AndroidUtil.getAppInfo
 import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
 import static com.xingshulin.singularity.utils.PatchUploader.uploadPatch
@@ -15,6 +15,7 @@ import static java.util.UUID.randomUUID
 class PatchPlugin implements Plugin<Project> {
     HashSet<String> excludeClass
     HashMap<String, String> patchedFiles = new HashMap<>()
+    HashMap<String, String> patchOptions = new HashMap<>()
 
     @Override
     void apply(Project project) {
@@ -32,13 +33,18 @@ class PatchPlugin implements Plugin<Project> {
                 transformTask.doFirst {
                     def processManifestTask = project.tasks.findByName("process${variant.name.capitalize()}Manifest")
                     def manifest = processManifestTask.outputs.files.find { file ->
-                        return file.absolutePath.endsWith("${variant.name.capitalize()}/AndroidManifest.xml")
+                        return file.absolutePath.endsWith("${variant.name}/AndroidManifest.xml")
                     }
                     if (manifest) {
-                        def applicationClass = AndroidUtil.getApplication(manifest as File)
-                        if (applicationClass) {
-                            excludeClass.add(applicationClass)
+                        def appInfo = getAppInfo(manifest as File)
+                        if (appInfo.applicationClass) {
+                            excludeClass.add(appInfo.applicationClass)
                         }
+                        savePatchOptions('packageName', appInfo.packageName)
+                        savePatchOptions('versionCode', appInfo.versionCode)
+                        savePatchOptions('versionName', appInfo.versionName)
+                        savePatchOptions('revisionCode', appInfo.revisionCode)
+                        savePatchOptions('buildingDeviceId', getDeviceId())
                     }
                 }
                 transformTask.doLast {
@@ -66,11 +72,25 @@ class PatchPlugin implements Plugin<Project> {
                     patchedTxt.getParentFile().delete()
                     patchedTxt.getParentFile().mkdirs()
                     patchedTxt.text = patchedFiles.inspect()
-                    uploadPatch(patchedTxt)
+                    uploadPatch(patchOptions, patchedTxt)
                 }
             }
         }
     }
 
+    private void savePatchOptions(String key, String value) {
+        if (value == null || key == null) return
+        if (!patchOptions.containsKey(key)) {
+            patchOptions[key] = value
+        }
+    }
 
+    private static String getDeviceId() {
+        def deviceIdFile = new File("${System.getProperty("user.home")}/.android_patch/device_id")
+        if (!deviceIdFile.exists()) {
+            deviceIdFile.getParentFile().mkdirs()
+            deviceIdFile.text = randomUUID()
+        }
+        deviceIdFile.text
+    }
 }

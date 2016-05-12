@@ -11,9 +11,14 @@ import static okhttp3.RequestBody.create
 class PatchUploader {
     static private OkHttpClient client = new OkHttpClient()
 
-    static void uploadPatch(File patchClasses) {
+    static void uploadPatch(HashMap<String, String> patchOptions, File patchClasses) {
         String uploadToken = getUploadToken(patchClasses.name)
         uploadFile(uploadToken, patchClasses)
+        uploadPatchOptions(patchOptions, patchClasses.name)
+    }
+
+    static void uploadPatchOptions(HashMap<String, String> patchOptions, String fileName) {
+
     }
 
     private static void uploadFile(String uploadToken, File patchedFiles) {
