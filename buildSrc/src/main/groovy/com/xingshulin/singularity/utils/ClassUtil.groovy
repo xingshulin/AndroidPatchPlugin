@@ -1,11 +1,6 @@
 package com.xingshulin.singularity.utils
 
-import jdk.internal.org.objectweb.asm.ClassReader
-import jdk.internal.org.objectweb.asm.ClassVisitor
-import jdk.internal.org.objectweb.asm.ClassWriter
-import jdk.internal.org.objectweb.asm.MethodVisitor
-import jdk.internal.org.objectweb.asm.Opcodes
-import jdk.internal.org.objectweb.asm.Type
+import jdk.internal.org.objectweb.asm.*
 import org.apache.commons.codec.digest.DigestUtils
 
 class ClassUtil {

@@ -11,7 +11,7 @@ import static okhttp3.RequestBody.create
 class PatchUploader {
     static private OkHttpClient client = new OkHttpClient()
 
-    static void uploadPatche(File patchedFiles) {
+    static void uploadPatch(File patchedFiles) {
         String uploadToken = getUploadToken(patchedFiles)
         uploadFile(uploadToken, patchedFiles)
     }
@@ -23,7 +23,7 @@ class PatchUploader {
                 .addFormDataPart('file', patchedFiles.name)
                 .addFormDataPart('key', patchedFiles.name)
                 .addFormDataPart('fileBinaryData', patchedFiles.name,
-                    create(parse('text/plain; charset=utf-8'), patchedFiles))
+                create(parse('text/plain; charset=utf-8'), patchedFiles))
                 .build()
         def request = new Request.Builder()
                 .url("http://upload.qiniu.com/")

@@ -2,14 +2,13 @@ package com.xingshulin.singularity
 
 import com.xingshulin.singularity.utils.AndroidUtil
 import groovy.io.FileVisitResult
-import org.apache.commons.codec.digest.DigestUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
-import static com.xingshulin.singularity.utils.PatchUploader.uploadPatche
+import static com.xingshulin.singularity.utils.PatchUploader.uploadPatch
 import static groovy.io.FileType.FILES
 import static java.util.UUID.randomUUID
 
@@ -67,7 +66,7 @@ class PatchPlugin implements Plugin<Project> {
                     patchedTxt.getParentFile().delete()
                     patchedTxt.getParentFile().mkdirs()
                     patchedTxt.text = patchedFiles.inspect()
-                    uploadPatche(patchedTxt)
+                    uploadPatch(patchedTxt)
                 }
             }
         }
