@@ -11,9 +11,9 @@ import static okhttp3.RequestBody.create
 class PatchUploader {
     static private OkHttpClient client = new OkHttpClient()
 
-    static void uploadPatch(File patchedFiles) {
-        String uploadToken = getUploadToken(patchedFiles)
-        uploadFile(uploadToken, patchedFiles)
+    static void uploadPatch(File patchClasses) {
+        String uploadToken = getUploadToken(patchClasses.name)
+        uploadFile(uploadToken, patchClasses)
     }
 
     private static void uploadFile(String uploadToken, File patchedFiles) {
@@ -33,9 +33,9 @@ class PatchUploader {
         println response.body().string()
     }
 
-    private static String getUploadToken(File patchedFiles) {
+    private static String getUploadToken(String fileName) {
         def builder = new Request.Builder()
-                .url("http://localhost:8080/tokens?type=put&key=${patchedFiles.name}")
+                .url("http://localhost:8080/tokens?type=put&key=${fileName}")
         def response = client.newCall(builder.build()).execute()
 
         String uploadToken = response.body().string()
