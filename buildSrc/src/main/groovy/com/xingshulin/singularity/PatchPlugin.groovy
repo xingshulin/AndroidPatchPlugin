@@ -2,13 +2,16 @@ package com.xingshulin.singularity
 
 import com.xingshulin.singularity.utils.AndroidUtil
 import groovy.io.FileVisitResult
+import org.apache.commons.codec.digest.DigestUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
+import static com.xingshulin.singularity.utils.PatchUploader.uploadPatche
 import static groovy.io.FileType.FILES
+import static java.util.UUID.randomUUID
 
 class PatchPlugin implements Plugin<Project> {
     HashSet<String> excludeClass
@@ -60,9 +63,11 @@ class PatchPlugin implements Plugin<Project> {
                             patchedFiles.put(guessClassName(fileOrDir, file), patchClass(file))
                         }
                     }
-                    def patchedTxt = new File("${project.buildDir}/outputs/patch/patch.${variant.dirName}.txt")
-                    if (!patchedTxt.getParentFile().exists()) patchedTxt.getParentFile().mkdirs()
+                    def patchedTxt = new File("${project.buildDir}/outputs/patch/patch.${randomUUID()}.txt")
+                    patchedTxt.getParentFile().delete()
+                    patchedTxt.getParentFile().mkdirs()
                     patchedTxt.text = patchedFiles.inspect()
+                    uploadPatche(patchedTxt)
                 }
             }
         }
