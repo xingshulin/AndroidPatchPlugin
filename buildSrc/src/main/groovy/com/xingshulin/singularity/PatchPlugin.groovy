@@ -4,6 +4,8 @@ import groovy.io.FileVisitResult
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static com.xingshulin.singularity.utils.AndroidUtil.getAppInfo
 import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
@@ -17,6 +19,7 @@ class PatchPlugin implements Plugin<Project> {
     HashSet<String> excludeClass
     HashMap<String, String> transformedFiles = new HashMap<>()
     HashMap<String, String> buildOptions = new HashMap<>()
+    static private Logger logger = LoggerFactory.getLogger('android-patch')
 
     @Override
     void apply(Project project) {
@@ -50,7 +53,7 @@ class PatchPlugin implements Plugin<Project> {
         def inputFiles = transformTask.inputs.files
         inputFiles.each { fileOrDir ->
             if (fileOrDir.isFile()) {
-                println fileOrDir.absolutePath + ' is skipped.'
+                logger.debug("${fileOrDir.absolutePath} is skipped.")
                 return
             }
             def dirFilter = {

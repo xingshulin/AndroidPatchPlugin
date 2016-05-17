@@ -5,6 +5,8 @@ import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.gradle.api.GradleException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static okhttp3.MediaType.parse
 import static okhttp3.RequestBody.create
@@ -12,6 +14,7 @@ import static okhttp3.RequestBody.create
 class PatchUploader {
     static private OkHttpClient client = new OkHttpClient()
     static private String host = "http://localhost:8080"
+    static private Logger logger = LoggerFactory.getLogger('android-patch')
 
     static void uploadPatch(HashMap<String, String> buildOptions, File patchClasses) {
         String uploadToken = getUploadToken(patchClasses.name)
@@ -20,6 +23,7 @@ class PatchUploader {
     }
 
     static void uploadBuildHistory(HashMap<String, String> buildHistorySettings, String fileName) {
+        logger.quiet('Upload build params')
         def builder = new Request.Builder().url("${host}/buildHistories")
         def formBuilder = new FormBody.Builder()
         for (String key : buildHistorySettings.keySet()) {
@@ -29,7 +33,7 @@ class PatchUploader {
         def request = builder.post(formBuilder.build()).build()
         def response = client.newCall(request).execute()
 
-        println response.body().string()
+        logger.debug(response.body().string())
     }
 
     private static void uploadFile(String uploadToken, File patchedFiles) {
@@ -46,7 +50,7 @@ class PatchUploader {
                 .header('Host', 'upload.qiniu.com')
                 .post(body).build()
         def response = client.newCall(request).execute()
-        println response.body().string()
+        logger.debug(response.body().string())
     }
 
     private static String getUploadToken(String fileName) {

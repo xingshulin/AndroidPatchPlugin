@@ -1,4 +1,4 @@
-package com.xingshulin.singularity;
+package com.xingshulin.sample;
 
 import org.junit.Test;
 

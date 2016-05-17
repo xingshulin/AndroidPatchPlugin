@@ -1,4 +1,4 @@
-package com.xingshulin.singularity;
+package com.xingshulin.sample;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;

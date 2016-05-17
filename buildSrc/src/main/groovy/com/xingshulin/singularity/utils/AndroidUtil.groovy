@@ -1,13 +1,6 @@
 package com.xingshulin.singularity.utils
 
 import groovy.xml.Namespace
-class AppInfo {
-    String applicationClass
-    String packageName
-    String versionCode
-    String versionName
-    String revisionCode
-}
 
 class AndroidUtil {
 
