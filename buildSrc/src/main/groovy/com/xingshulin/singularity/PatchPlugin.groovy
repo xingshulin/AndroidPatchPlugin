@@ -32,44 +32,10 @@ class PatchPlugin implements Plugin<Project> {
                     throw new GradleException('Cannot find any transform tasks')
                 }
                 transformTask.doFirst {
-                    def processManifestTask = project.tasks.findByName("process${variant.name.capitalize()}Manifest")
-                    def manifest = processManifestTask.outputs.files.find { file ->
-                        return file.absolutePath.endsWith("${variant.name}/AndroidManifest.xml")
-                    }
-                    if (manifest) {
-                        def appInfo = getAppInfo(manifest as File)
-                        if (appInfo.applicationClass) {
-                            excludeClass.add(appInfo.applicationClass)
-                        }
-                        savePatchOptions('packageName', appInfo.packageName)
-                        savePatchOptions('versionCode', appInfo.versionCode)
-                        savePatchOptions('versionName', appInfo.versionName)
-                        savePatchOptions('revisionCode', appInfo.revisionCode)
-                        savePatchOptions('buildDeviceId', getDeviceId())
-                        savePatchOptions('buildTimestamp', "" + currentTimeMillis())
-                    }
+                    cacheBuildOptions(project, variant)
+                    patchClasses(transformTask)
                 }
                 transformTask.doLast {
-                    def inputFiles = transformTask.inputs.files
-                    inputFiles.each { fileOrDir ->
-                        if (fileOrDir.isFile()) {
-                            println fileOrDir.absolutePath + ' is skipped.'
-                            return
-                        }
-                        def dirFilter = {
-                            if (it.absolutePath.contains("com/xingshulin/singularity/"))
-                                return FileVisitResult.SKIP_SUBTREE
-                            return FileVisitResult.CONTINUE
-                        }
-                        fileOrDir.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
-                            if (excludeClass.any { excluded ->
-                                file.absolutePath.endsWith(excluded)
-                            }) {
-                                return
-                            }
-                            transformedFiles.put(guessClassName(fileOrDir, file), patchClass(file))
-                        }
-                    }
                     def patchedTxt = new File("${project.buildDir}/outputs/patch/patch.dex.${randomUUID()}.txt")
                     patchedTxt.getParentFile().delete()
                     patchedTxt.getParentFile().mkdirs()
@@ -80,7 +46,49 @@ class PatchPlugin implements Plugin<Project> {
         }
     }
 
-    private void savePatchOptions(String key, String value) {
+    private void patchClasses(transformTask) {
+        def inputFiles = transformTask.inputs.files
+        inputFiles.each { fileOrDir ->
+            if (fileOrDir.isFile()) {
+                println fileOrDir.absolutePath + ' is skipped.'
+                return
+            }
+            def dirFilter = {
+                if (it.absolutePath.contains("com/xingshulin/singularity/"))
+                    return FileVisitResult.SKIP_SUBTREE
+                return FileVisitResult.CONTINUE
+            }
+            fileOrDir.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
+                if (excludeClass.any { excluded ->
+                    file.absolutePath.endsWith(excluded)
+                }) {
+                    return
+                }
+                transformedFiles.put(guessClassName(fileOrDir, file), patchClass(file))
+            }
+        }
+    }
+
+    private void cacheBuildOptions(project, variant) {
+        def processManifestTask = project.tasks.findByName("process${variant.name.capitalize()}Manifest")
+        def manifest = processManifestTask.outputs.files.find { file ->
+            return file.absolutePath.endsWith("${variant.name}/AndroidManifest.xml")
+        }
+        if (manifest) {
+            def appInfo = getAppInfo(manifest as File)
+            if (appInfo.applicationClass) {
+                excludeClass.add(appInfo.applicationClass)
+            }
+            nullSafeSavePatchOptions('packageName', appInfo.packageName)
+            nullSafeSavePatchOptions('versionCode', appInfo.versionCode)
+            nullSafeSavePatchOptions('versionName', appInfo.versionName)
+            nullSafeSavePatchOptions('revisionCode', appInfo.revisionCode)
+            nullSafeSavePatchOptions('buildDeviceId', getDeviceId())
+            nullSafeSavePatchOptions('buildTimestamp', "" + currentTimeMillis())
+        }
+    }
+
+    private void nullSafeSavePatchOptions(String key, String value) {
         if (value == null || key == null) return
         if (!buildOptions.containsKey(key)) {
             buildOptions[key] = value
