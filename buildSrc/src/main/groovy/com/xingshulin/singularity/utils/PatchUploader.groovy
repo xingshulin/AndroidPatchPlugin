@@ -16,7 +16,7 @@ class PatchUploader {
     static private String host = "http://localhost:8080"
     static private Logger logger = LoggerFactory.getLogger('android-patch')
 
-    static void uploadPatch(HashMap<String, String> buildOptions, File patchClasses) {
+    static void saveBuildHistory(HashMap<String, String> buildOptions, File patchClasses) {
         String uploadToken = getUploadToken(patchClasses.name)
         uploadFile(uploadToken, patchClasses)
         uploadBuildHistory(buildOptions, patchClasses.name)

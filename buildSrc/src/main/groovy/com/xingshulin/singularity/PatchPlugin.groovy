@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 import static com.xingshulin.singularity.utils.AndroidUtil.getAppInfo
 import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
-import static com.xingshulin.singularity.utils.PatchUploader.uploadPatch
+import static com.xingshulin.singularity.utils.PatchUploader.saveBuildHistory
 import static groovy.io.FileType.FILES
 import static java.lang.System.currentTimeMillis
 import static java.util.UUID.randomUUID
@@ -43,7 +43,7 @@ class PatchPlugin implements Plugin<Project> {
                     patchedTxt.getParentFile().delete()
                     patchedTxt.getParentFile().mkdirs()
                     patchedTxt.text = transformedFiles.inspect()
-                    uploadPatch(buildOptions, patchedTxt)
+                    saveBuildHistory(buildOptions, patchedTxt)
                 }
             }
         }
