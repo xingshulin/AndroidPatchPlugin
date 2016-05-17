@@ -10,12 +10,13 @@ import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
 import static com.xingshulin.singularity.utils.PatchUploader.uploadPatch
 import static groovy.io.FileType.FILES
+import static java.lang.System.currentTimeMillis
 import static java.util.UUID.randomUUID
 
 class PatchPlugin implements Plugin<Project> {
     HashSet<String> excludeClass
-    HashMap<String, String> patchedFiles = new HashMap<>()
-    HashMap<String, String> patchOptions = new HashMap<>()
+    HashMap<String, String> transformedFiles = new HashMap<>()
+    HashMap<String, String> buildOptions = new HashMap<>()
 
     @Override
     void apply(Project project) {
@@ -44,7 +45,8 @@ class PatchPlugin implements Plugin<Project> {
                         savePatchOptions('versionCode', appInfo.versionCode)
                         savePatchOptions('versionName', appInfo.versionName)
                         savePatchOptions('revisionCode', appInfo.revisionCode)
-                        savePatchOptions('buildingDeviceId', getDeviceId())
+                        savePatchOptions('buildDeviceId', getDeviceId())
+                        savePatchOptions('buildTimestamp', "" + currentTimeMillis())
                     }
                 }
                 transformTask.doLast {
@@ -65,14 +67,14 @@ class PatchPlugin implements Plugin<Project> {
                             }) {
                                 return
                             }
-                            patchedFiles.put(guessClassName(fileOrDir, file), patchClass(file))
+                            transformedFiles.put(guessClassName(fileOrDir, file), patchClass(file))
                         }
                     }
-                    def patchedTxt = new File("${project.buildDir}/outputs/patch/patch.${randomUUID()}.txt")
+                    def patchedTxt = new File("${project.buildDir}/outputs/patch/patch.dex.${randomUUID()}.txt")
                     patchedTxt.getParentFile().delete()
                     patchedTxt.getParentFile().mkdirs()
-                    patchedTxt.text = patchedFiles.inspect()
-                    uploadPatch(patchOptions, patchedTxt)
+                    patchedTxt.text = transformedFiles.inspect()
+                    uploadPatch(buildOptions, patchedTxt)
                 }
             }
         }
@@ -80,8 +82,8 @@ class PatchPlugin implements Plugin<Project> {
 
     private void savePatchOptions(String key, String value) {
         if (value == null || key == null) return
-        if (!patchOptions.containsKey(key)) {
-            patchOptions[key] = value
+        if (!buildOptions.containsKey(key)) {
+            buildOptions[key] = value
         }
     }
 

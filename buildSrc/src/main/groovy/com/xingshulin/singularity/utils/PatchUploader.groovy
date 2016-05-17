@@ -1,5 +1,6 @@
 package com.xingshulin.singularity.utils
 
+import okhttp3.FormBody
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -10,15 +11,25 @@ import static okhttp3.RequestBody.create
 
 class PatchUploader {
     static private OkHttpClient client = new OkHttpClient()
+    static private String host = "http://localhost:8080"
 
-    static void uploadPatch(HashMap<String, String> patchOptions, File patchClasses) {
+    static void uploadPatch(HashMap<String, String> buildOptions, File patchClasses) {
         String uploadToken = getUploadToken(patchClasses.name)
         uploadFile(uploadToken, patchClasses)
-        uploadPatchOptions(patchOptions, patchClasses.name)
+        uploadBuildHistory(buildOptions, patchClasses.name)
     }
 
-    static void uploadPatchOptions(HashMap<String, String> patchOptions, String fileName) {
+    static void uploadBuildHistory(HashMap<String, String> buildHistorySettings, String fileName) {
+        def builder = new Request.Builder().url("${host}/buildHistories")
+        def formBuilder = new FormBody.Builder()
+        for (String key : buildHistorySettings.keySet()) {
+            formBuilder.addEncoded(key, buildHistorySettings.get(key))
+        }
+        formBuilder.addEncoded("dexMapping", fileName)
+        def request = builder.post(formBuilder.build()).build()
+        def response = client.newCall(request).execute()
 
+        println response.body().string()
     }
 
     private static void uploadFile(String uploadToken, File patchedFiles) {
@@ -40,7 +51,7 @@ class PatchUploader {
 
     private static String getUploadToken(String fileName) {
         def builder = new Request.Builder()
-                .url("http://localhost:8080/tokens?type=put&key=${fileName}")
+                .url("${host}/tokens?type=put&key=${fileName}")
         def response = client.newCall(builder.build()).execute()
 
         String uploadToken = response.body().string()
