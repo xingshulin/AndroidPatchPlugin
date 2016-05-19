@@ -46,17 +46,17 @@ class PatchPlugin implements Plugin<Project> {
                     def patchedTxt = new File(getPatchDir(project) + "/patch.dex.${randomUUID()}.txt")
                     patchedTxt.text = transformedFiles.inspect()
                     saveBuildHistory(buildOptions, patchedTxt)
-                    generatePatchFile()
+                    generatePatchFile(project)
                 }
             }
         }
     }
 
-    void generatePatchFile() {
+    void generatePatchFile(project) {
         buildOptions.remove(KEY_BUILD_TIMESTAMP)
         buildOptions.remove(KEY_REVISION_CODE)
         buildOptions.put("buildTimestamp", "1463490606804")
-        def lastTransformedFiles = downloadBuildHistory(buildOptions)
+        def lastTransformedFiles = downloadBuildHistory(buildOptions, getPatchDir(project))
     }
 
     private static void ensurePatchDir(project) {

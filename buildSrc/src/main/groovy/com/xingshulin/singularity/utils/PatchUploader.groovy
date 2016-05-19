@@ -5,6 +5,7 @@ import okhttp3.FormBody
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import org.gradle.api.GradleException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -18,22 +19,31 @@ class PatchUploader {
     static private String host = "http://localhost:8080"
     static private Logger logger = LoggerFactory.getLogger('android-patch')
 
-    static HashMap<String, String> downloadBuildHistory(HashMap<String, String> buildOptions) {
+    static HashMap<String, String> downloadBuildHistory(HashMap<String, String> buildOptions, String patchDir) {
         if (buildOptions.size() < 1) {
             throw new GradleException('Need to specify more than 1 params')
         }
-        def params = buildOptions.collect { key, value ->
-            return "${key}=${encode(value, "UTF-8")}"
-        }
-        def builder = new Request.Builder().url("${host}/buildHistories?${params.join('&')}")
-        def response = client.newCall(builder.build()).execute()
-        def jsonSlurper = new JsonSlurper()
-        def object = jsonSlurper.parse(response.body().byteStream())
+        Object object = downloadBuildHistories(buildOptions)
         String mapping = object[0]["dexMapping"]
         logger.debug("Found mapping file ${mapping}")
         def token = getToken("get", mapping)
-        println(token)
+        def request = new Request.Builder().url(token).get().build()
+        def response = client.newCall(request).execute()
+        def patchedTxt = new File("${patchDir}/${mapping}")
+        patchedTxt.text = response.body().bytes()
+        logger.quiet("Downloaded mapping file ${patchedTxt.absolutePath}")
         return new HashMap<String, String>()
+    }
+
+    private static Object downloadBuildHistories(HashMap<String, String> buildOptions) {
+        def params = buildOptions.collect { key, value ->
+            return "${key}=${encode(value, "UTF-8")}"
+        }
+        def request = new Request.Builder().url("${host}/buildHistories?${params.join('&')}").build()
+        def response = client.newCall(request).execute()
+        def jsonSlurper = new JsonSlurper()
+        def object = jsonSlurper.parse(response.body().byteStream())
+        object
     }
 
     static void saveBuildHistory(HashMap<String, String> buildOptions, File patchClasses) {
