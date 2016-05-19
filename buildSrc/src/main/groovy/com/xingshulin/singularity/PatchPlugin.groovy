@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 import static com.xingshulin.singularity.utils.AndroidUtil.getAppInfo
 import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
+import static com.xingshulin.singularity.utils.MapUtils.merge
 import static com.xingshulin.singularity.utils.PatchUploader.downloadBuildHistory
 import static com.xingshulin.singularity.utils.PatchUploader.saveBuildHistory
 import static groovy.io.FileType.FILES
@@ -19,6 +20,10 @@ import static java.util.UUID.randomUUID
 class PatchPlugin implements Plugin<Project> {
     public static final String KEY_BUILD_TIMESTAMP = 'buildTimestamp'
     public static final String KEY_REVISION_CODE = 'revisionCode'
+    public static final String KEY_PACKAGE_NAME = 'packageName'
+    public static final String KEY_VERSION_CODE = 'versionCode'
+    public static final String KEY_VERSION_NAME = 'versionName'
+    public static final String KEY_BUILD_DEVICE_ID = 'buildDeviceId'
     HashSet<String> excludeClass
     HashMap<String, String> transformedFiles = new HashMap<>()
     HashMap<String, String> buildOptions = new HashMap<>()
@@ -26,7 +31,7 @@ class PatchPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.extensions.create('Patch', PatchExtension.class, project)
+        project.extensions.create('patchCreator', PatchBuilderExtension.class, project)
 
         project.afterEvaluate {
             if (!project.android) {
@@ -53,10 +58,11 @@ class PatchPlugin implements Plugin<Project> {
     }
 
     void generatePatchFile(project) {
-        buildOptions.remove(KEY_BUILD_TIMESTAMP)
-        buildOptions.remove(KEY_REVISION_CODE)
-        def lastTransformedFiles = downloadBuildHistory(buildOptions, getPatchDir(project))
+        HashMap<String, String> filter = project.patchCreator.buildHistoriesFilter
+        merge(filter, buildOptions, KEY_PACKAGE_NAME, KEY_VERSION_NAME, KEY_VERSION_CODE, KEY_BUILD_DEVICE_ID)
+        def lastTransformedFiles = downloadBuildHistory(filter, getPatchDir(project))
     }
+
 
     private static void ensurePatchDir(project) {
         new File(getPatchDir(project)).mkdirs()
@@ -99,11 +105,11 @@ class PatchPlugin implements Plugin<Project> {
             if (appInfo.applicationClass) {
                 excludeClass.add(appInfo.applicationClass)
             }
-            nullSafeSavePatchOptions('packageName', appInfo.packageName)
-            nullSafeSavePatchOptions('versionCode', appInfo.versionCode)
-            nullSafeSavePatchOptions('versionName', appInfo.versionName)
+            nullSafeSavePatchOptions(KEY_PACKAGE_NAME, appInfo.packageName)
+            nullSafeSavePatchOptions(KEY_VERSION_CODE, appInfo.versionCode)
+            nullSafeSavePatchOptions(KEY_VERSION_NAME, appInfo.versionName)
             nullSafeSavePatchOptions(KEY_REVISION_CODE, appInfo.revisionCode)
-            nullSafeSavePatchOptions('buildDeviceId', getDeviceId())
+            nullSafeSavePatchOptions(KEY_BUILD_DEVICE_ID, getDeviceId())
             nullSafeSavePatchOptions(KEY_BUILD_TIMESTAMP, "" + currentTimeMillis())
         }
     }

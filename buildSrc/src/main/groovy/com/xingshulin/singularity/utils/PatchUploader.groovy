@@ -28,7 +28,6 @@ class PatchUploader {
         logger.debug("Found mapping file ${mapping}")
         def token = getToken("get", mapping)
 
-        println(token)
         def request = new Request.Builder().url(token).build()
         def response = client.newCall(request).execute()
 
