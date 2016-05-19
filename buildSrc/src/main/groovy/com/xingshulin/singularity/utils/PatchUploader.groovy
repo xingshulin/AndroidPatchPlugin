@@ -27,12 +27,17 @@ class PatchUploader {
         String mapping = object[0]["dexMapping"]
         logger.debug("Found mapping file ${mapping}")
         def token = getToken("get", mapping)
-        def request = new Request.Builder().url(token).get().build()
+
+        println(token)
+        def request = new Request.Builder().url(token).build()
         def response = client.newCall(request).execute()
+
         def patchedTxt = new File("${patchDir}/${mapping}")
-        patchedTxt.text = response.body().bytes()
+        if (patchedTxt.exists()) patchedTxt.delete()
+
+        patchedTxt.bytes = response.body().bytes()
         logger.quiet("Downloaded mapping file ${patchedTxt.absolutePath}")
-        return new HashMap<String, String>()
+        return (HashMap<String, String>) Eval.me(patchedTxt.text)
     }
 
     private static Object downloadBuildHistories(HashMap<String, String> buildOptions) {
@@ -70,10 +75,8 @@ class PatchUploader {
         def body = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart('token', uploadToken)
-                .addFormDataPart('file', patchedFiles.name)
+                .addFormDataPart('file', patchedFiles.name, create(parse('text/plain; charset=utf-8'), patchedFiles))
                 .addFormDataPart('key', patchedFiles.name)
-                .addFormDataPart('fileBinaryData', patchedFiles.name,
-                create(parse('text/plain; charset=utf-8'), patchedFiles))
                 .build()
         def request = new Request.Builder()
                 .url("http://upload.qiniu.com/")
