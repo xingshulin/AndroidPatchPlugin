@@ -1,14 +1,12 @@
 package com.xingshulin.singularity
 
-import com.xingshulin.singularity.utils.AndroidUtil
-import com.xingshulin.singularity.utils.FileUtils
-import groovy.io.FileVisitResult
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import static com.xingshulin.singularity.utils.AndroidUtil.dex
 import static com.xingshulin.singularity.utils.AndroidUtil.getAppInfo
 import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
@@ -54,25 +52,28 @@ class PatchPlugin implements Plugin<Project> {
                     def patchedTxt = new File(getPatchDir(project) + "/patch.dex.${randomUUID()}.txt")
                     patchedTxt.text = transformedFiles.inspect()
                     saveBuildHistory(buildOptions, patchedTxt)
-                    def changedFiles = findChangedFiles(project)
-
-                    def generatedPatchDir = new File("${getPatchDir(project)}/generated_patch")
-                    generatedPatchDir.mkdirs()
-                    transformTask.inputs.files.each {
-                        if (it.isFile()) return
-                        it.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
-                            def className = guessClassName(it, file)
-                            if (changedFiles.containsKey(className)) {
-                                def classToCopy = new File("${generatedPatchDir}/${className}")
-                                classToCopy.getParentFile().mkdirs()
-                                classToCopy.bytes = file.bytes
-                            }
-                        }
-                    }
-                    AndroidUtil.dex(project, generatedPatchDir)
+                    createRealPatch(project, transformTask)
                 }
             }
         }
+    }
+
+    private void createRealPatch(Project project, transformTask) {
+        def changedFiles = findChangedFiles(project)
+        def generatedPatchDir = new File("${getPatchDir(project)}/generated_patch")
+        generatedPatchDir.mkdirs()
+        transformTask.inputs.files.each {
+            if (it.isFile()) return
+            it.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
+                def className = guessClassName(it, file)
+                if (changedFiles.containsKey(className)) {
+                    def classToCopy = new File("${generatedPatchDir}/${className}")
+                    classToCopy.getParentFile().mkdirs()
+                    classToCopy.bytes = file.bytes
+                }
+            }
+        }
+        dex(project, generatedPatchDir)
     }
 
     Map<String, String> findChangedFiles(project) {
