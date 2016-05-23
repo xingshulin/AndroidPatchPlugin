@@ -1,5 +1,7 @@
 package com.xingshulin.singularity
 
+import com.xingshulin.singularity.utils.AndroidUtil
+import com.xingshulin.singularity.utils.FileUtils
 import groovy.io.FileVisitResult
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory
 import static com.xingshulin.singularity.utils.AndroidUtil.getAppInfo
 import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
+import static com.xingshulin.singularity.utils.FileUtils.dirFilter
 import static com.xingshulin.singularity.utils.MapUtils.merge
 import static com.xingshulin.singularity.utils.PatchUploader.downloadBuildHistory
 import static com.xingshulin.singularity.utils.PatchUploader.saveBuildHistory
@@ -51,18 +54,39 @@ class PatchPlugin implements Plugin<Project> {
                     def patchedTxt = new File(getPatchDir(project) + "/patch.dex.${randomUUID()}.txt")
                     patchedTxt.text = transformedFiles.inspect()
                     saveBuildHistory(buildOptions, patchedTxt)
-                    generatePatchFile(project)
+                    def changedFiles = findChangedFiles(project)
+
+                    def generatedPatchDir = new File("${getPatchDir(project)}/generated_patch")
+                    generatedPatchDir.mkdirs()
+                    transformTask.inputs.files.each {
+                        if (it.isFile()) return
+                        it.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
+                            def className = guessClassName(it, file)
+                            if (changedFiles.containsKey(className)) {
+                                def classToCopy = new File("${generatedPatchDir}/${className}")
+                                classToCopy.getParentFile().mkdirs()
+                                classToCopy.bytes = file.bytes
+                            }
+                        }
+                    }
+                    AndroidUtil.dex(project, generatedPatchDir)
                 }
             }
         }
     }
 
-    void generatePatchFile(project) {
+    Map<String, String> findChangedFiles(project) {
         HashMap<String, String> filter = project.patchCreator.buildHistoriesFilter
         merge(filter, buildOptions, KEY_PACKAGE_NAME, KEY_VERSION_NAME, KEY_VERSION_CODE, KEY_BUILD_DEVICE_ID)
         def lastTransformedFiles = downloadBuildHistory(filter, getPatchDir(project))
+        diff(lastTransformedFiles, transformedFiles)
     }
 
+    static Map<String, String> diff(HashMap<String, String> original, HashMap<String, String> newer) {
+        return original.findAll {
+            newer.get(it.key, null) != it.value
+        }
+    }
 
     private static void ensurePatchDir(project) {
         new File(getPatchDir(project)).mkdirs()
@@ -79,11 +103,7 @@ class PatchPlugin implements Plugin<Project> {
                 logger.debug("${fileOrDir.absolutePath} is skipped.")
                 return
             }
-            def dirFilter = {
-                if (it.absolutePath.contains("com/xingshulin/singularity/"))
-                    return FileVisitResult.SKIP_SUBTREE
-                return FileVisitResult.CONTINUE
-            }
+
             fileOrDir.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
                 if (excludeClass.any { excluded ->
                     file.absolutePath.endsWith(excluded)
