@@ -5,7 +5,7 @@ import okhttp3.FormBody
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
+import org.apache.commons.codec.digest.DigestUtils
 import org.gradle.api.GradleException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -13,11 +13,18 @@ import org.slf4j.LoggerFactory
 import static java.net.URLEncoder.encode
 import static okhttp3.MediaType.parse
 import static okhttp3.RequestBody.create
+import static org.apache.commons.codec.digest.DigestUtils.shaHex
 
 class PatchUploader {
     static private OkHttpClient client = new OkHttpClient()
     static private String host = "http://localhost:8080"
     static private Logger logger = LoggerFactory.getLogger('android-patch')
+    public static final String KEY_BUILD_TIMESTAMP = 'buildTimestamp'
+    public static final String KEY_REVISION_CODE = 'revisionCode'
+    public static final String KEY_PACKAGE_NAME = 'packageName'
+    public static final String KEY_VERSION_CODE = 'versionCode'
+    public static final String KEY_VERSION_NAME = 'versionName'
+    public static final String KEY_BUILD_DEVICE_ID = 'buildDeviceId'
 
     static HashMap<String, String> downloadBuildHistory(HashMap<String, String> buildOptions, String patchDir) {
         if (buildOptions.size() < 1) {
@@ -46,8 +53,7 @@ class PatchUploader {
         def request = new Request.Builder().url("${host}/buildHistories?${params.join('&')}").build()
         def response = client.newCall(request).execute()
         def jsonSlurper = new JsonSlurper()
-        def object = jsonSlurper.parse(response.body().byteStream())
-        object
+        jsonSlurper.parse(response.body().byteStream())
     }
 
     static void saveBuildHistory(HashMap<String, String> buildOptions, File patchClasses) {
@@ -95,5 +101,29 @@ class PatchUploader {
             throw new GradleException('Cannot get upload token, please check your network.')
         }
         uploadToken
+    }
+
+    static void uploadPatch(Map<String, String> patchOptions, File patchFile) {
+        String uploadToken = getToken("put", patchFile.name)
+        uploadFile(uploadToken, patchFile)
+        uploadPatchInfo(patchOptions, patchFile)
+    }
+
+    static void uploadPatchInfo(Map<String, String> patchOptions, File patchFile) {
+        logger.quiet('Upload patch info')
+        def builder = new Request.Builder().url("${host}/patches")
+        def formBuilder = new FormBody.Builder()
+        formBuilder.addEncoded('appName', patchOptions.get(KEY_PACKAGE_NAME))
+        formBuilder.addEncoded('appVersion', patchOptions.get(KEY_VERSION_NAME))
+        formBuilder.addEncoded('appBuild', patchOptions.get(KEY_VERSION_CODE))
+        formBuilder.addEncoded('version', '1')
+        formBuilder.addEncoded("uri", patchFile.name)
+        formBuilder.addEncoded("crc", shaHex(patchFile.bytes))
+        formBuilder.addEncoded("buildDeviceId", patchOptions.get(KEY_BUILD_DEVICE_ID))
+        formBuilder.addEncoded("buildTimestamp", patchOptions.get(KEY_BUILD_TIMESTAMP))
+        def request = builder.post(formBuilder.build()).build()
+        def response = client.newCall(request).execute()
+
+        logger.debug(response.body().string())
     }
 }

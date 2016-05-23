@@ -12,19 +12,12 @@ import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
 import static com.xingshulin.singularity.utils.FileUtils.dirFilter
 import static com.xingshulin.singularity.utils.MapUtils.merge
-import static com.xingshulin.singularity.utils.PatchUploader.downloadBuildHistory
-import static com.xingshulin.singularity.utils.PatchUploader.saveBuildHistory
+import static com.xingshulin.singularity.utils.PatchUploader.*
 import static groovy.io.FileType.FILES
 import static java.lang.System.currentTimeMillis
 import static java.util.UUID.randomUUID
 
 class PatchPlugin implements Plugin<Project> {
-    public static final String KEY_BUILD_TIMESTAMP = 'buildTimestamp'
-    public static final String KEY_REVISION_CODE = 'revisionCode'
-    public static final String KEY_PACKAGE_NAME = 'packageName'
-    public static final String KEY_VERSION_CODE = 'versionCode'
-    public static final String KEY_VERSION_NAME = 'versionName'
-    public static final String KEY_BUILD_DEVICE_ID = 'buildDeviceId'
     HashSet<String> excludeClass
     HashMap<String, String> transformedFiles = new HashMap<>()
     HashMap<String, String> buildOptions = new HashMap<>()
@@ -73,7 +66,11 @@ class PatchPlugin implements Plugin<Project> {
                 }
             }
         }
-        dex(project, generatedPatchDir)
+        def patchFile = dex(project, generatedPatchDir)
+        def patchOptions = new HashMap<String, String>()
+        patchOptions.put(KEY_BUILD_TIMESTAMP, '' + currentTimeMillis())
+        merge(patchOptions, buildOptions, KEY_PACKAGE_NAME, KEY_VERSION_NAME, KEY_VERSION_CODE, KEY_BUILD_DEVICE_ID)
+        uploadPatch(patchOptions, patchFile)
     }
 
     Map<String, String> findChangedFiles(project) {

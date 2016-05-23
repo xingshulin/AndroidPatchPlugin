@@ -6,6 +6,7 @@ import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
 
 import static java.lang.System.currentTimeMillis
+import static java.util.UUID.randomUUID
 
 class AndroidUtil {
 
@@ -48,18 +49,19 @@ class AndroidUtil {
         return manifest.attribute('package')
     }
 
-    static void dex(Project project, File patchDir) {
+    static File dex(Project project, File patchDir) {
         if (!patchDir.listFiles().size()) return
         def sdkDir = getSdkDir(project)
         if (!sdkDir) {
             throw new InvalidUserDataException('$ANDROID_HOME is not defined')
         }
+        def patchFile = new File(patchDir.getParent(), "patch.${randomUUID()}.jar")
         def cmdExtension = Os.isFamily(Os.FAMILY_WINDOWS) ? ".bat" : ""
         def stdout = new ByteArrayOutputStream()
         project.exec {
             commandLine "${sdkDir}/build-tools/${project.android.buildToolsVersion}/dx${cmdExtension}",
                     '--dex',
-                    "--output=${new File(patchDir.getParent(), "patch.${currentTimeMillis()}.jar").absolutePath}",
+                    "--output=${patchFile.absolutePath}",
                     "${patchDir.absolutePath}"
             standardOutput = stdout
         }
@@ -67,6 +69,7 @@ class AndroidUtil {
         if (error) {
             println "dex error:" + error
         }
+        patchFile
     }
 
     public static String getSdkDir(Project project) {
