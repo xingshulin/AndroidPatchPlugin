@@ -2,6 +2,7 @@ package com.xingshulin.singularity.utils
 
 import groovy.xml.Namespace
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.api.GradleException
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
 
@@ -50,7 +51,6 @@ class AndroidUtil {
     }
 
     static File dex(Project project, File patchDir) {
-        if (!patchDir.listFiles().size()) return
         def sdkDir = getSdkDir(project)
         if (!sdkDir) {
             throw new InvalidUserDataException('$ANDROID_HOME is not defined')
@@ -67,7 +67,7 @@ class AndroidUtil {
         }
         def error = stdout.toString().trim()
         if (error) {
-            println "dex error:" + error
+            throw new GradleException(error)
         }
         patchFile
     }

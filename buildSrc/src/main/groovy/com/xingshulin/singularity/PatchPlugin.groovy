@@ -12,6 +12,7 @@ import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
 import static com.xingshulin.singularity.utils.FileUtils.dirFilter
 import static com.xingshulin.singularity.utils.MapUtils.merge
+import static com.xingshulin.singularity.utils.MapUtils.nullSafePut
 import static com.xingshulin.singularity.utils.PatchUploader.*
 import static groovy.io.FileType.FILES
 import static java.lang.System.currentTimeMillis
@@ -38,7 +39,7 @@ class PatchPlugin implements Plugin<Project> {
                 }
                 transformTask.doFirst {
                     ensurePatchDir(project)
-                    cacheBuildOptions(project, variant)
+                    loadBuildOptions(project, variant)
                     patchClasses(transformTask)
                 }
                 transformTask.doLast {
@@ -53,8 +54,7 @@ class PatchPlugin implements Plugin<Project> {
 
     private void createRealPatch(Project project, transformTask) {
         def changedFiles = findChangedFiles(project)
-        def generatedPatchDir = new File("${getPatchDir(project)}/generated_patch")
-        generatedPatchDir.mkdirs()
+        File generatedPatchDir = getPatchOutputDir(project)
         transformTask.inputs.files.each {
             if (it.isFile()) return
             it.traverse(type: FILES, nameFilter: ~/.*\.class/, preDir: dirFilter) { file ->
@@ -66,11 +66,22 @@ class PatchPlugin implements Plugin<Project> {
                 }
             }
         }
+
+        if (!generatedPatchDir.listFiles().size()) {
+            logger.warn('Not changes found for generating patch file, just skip this build.')
+            return
+        }
         def patchFile = dex(project, generatedPatchDir)
         def patchOptions = new HashMap<String, String>()
         patchOptions.put(KEY_BUILD_TIMESTAMP, '' + currentTimeMillis())
         merge(patchOptions, buildOptions, KEY_PACKAGE_NAME, KEY_VERSION_NAME, KEY_VERSION_CODE, KEY_BUILD_DEVICE_ID)
         uploadPatch(patchOptions, patchFile)
+    }
+
+    private static File getPatchOutputDir(Project project) {
+        def generatedPatchDir = new File("${getPatchDir(project)}/generated_patch")
+        generatedPatchDir.mkdirs()
+        generatedPatchDir
     }
 
     Map<String, String> findChangedFiles(project) {
@@ -113,7 +124,7 @@ class PatchPlugin implements Plugin<Project> {
         }
     }
 
-    private void cacheBuildOptions(project, variant) {
+    private void loadBuildOptions(project, variant) {
         def processManifestTask = project.tasks.findByName("process${variant.name.capitalize()}Manifest")
         def manifest = processManifestTask.outputs.files.find { file ->
             return file.absolutePath.endsWith("${variant.name}/AndroidManifest.xml")
@@ -123,19 +134,12 @@ class PatchPlugin implements Plugin<Project> {
             if (appInfo.applicationClass) {
                 excludeClass.add(appInfo.applicationClass)
             }
-            nullSafeSavePatchOptions(KEY_PACKAGE_NAME, appInfo.packageName)
-            nullSafeSavePatchOptions(KEY_VERSION_CODE, appInfo.versionCode)
-            nullSafeSavePatchOptions(KEY_VERSION_NAME, appInfo.versionName)
-            nullSafeSavePatchOptions(KEY_REVISION_CODE, appInfo.revisionCode)
-            nullSafeSavePatchOptions(KEY_BUILD_DEVICE_ID, getDeviceId())
-            nullSafeSavePatchOptions(KEY_BUILD_TIMESTAMP, "" + currentTimeMillis())
-        }
-    }
-
-    private void nullSafeSavePatchOptions(String key, String value) {
-        if (value == null || key == null) return
-        if (!buildOptions.containsKey(key)) {
-            buildOptions[key] = value
+            nullSafePut(buildOptions, KEY_PACKAGE_NAME, appInfo.packageName)
+            nullSafePut(buildOptions, KEY_VERSION_CODE, appInfo.versionCode)
+            nullSafePut(buildOptions, KEY_VERSION_NAME, appInfo.versionName)
+            nullSafePut(buildOptions, KEY_REVISION_CODE, appInfo.revisionCode)
+            nullSafePut(buildOptions, KEY_BUILD_DEVICE_ID, getDeviceId())
+            nullSafePut(buildOptions, KEY_BUILD_TIMESTAMP, "" + currentTimeMillis())
         }
     }
 

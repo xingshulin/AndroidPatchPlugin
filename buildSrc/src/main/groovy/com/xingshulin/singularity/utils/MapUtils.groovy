@@ -6,4 +6,11 @@ class MapUtils {
             dest.put(key, source.get(key))
         }
     }
+
+    static void nullSafePut(Map<String, String> options, String key, String value) {
+     if (value == null || key == null) return
+     if (!options.containsKey(key)) {
+         options[key] = value
+     }
+ }
 }
