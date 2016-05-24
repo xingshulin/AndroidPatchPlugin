@@ -2,11 +2,12 @@ package com.xingshulin.singularity
 
 import org.gradle.api.Project
 
-class PatchBuilderExtension {
+class PatchCreatorExtension {
+    boolean disabled
     HashMap<String, String> buildHistoriesFilter = [[:]]
     String accessKey
     HashSet<String> excludeClass = []
 
-    PatchBuilderExtension(Project project) {
+    PatchCreatorExtension(Project project) {
     }
 }

@@ -26,12 +26,18 @@ class PatchPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.extensions.create('patchCreator', PatchBuilderExtension.class, project)
+        project.extensions.create('patchCreator', PatchCreatorExtension.class, project)
 
         project.afterEvaluate {
             if (!project.android) {
                 throw new GradleException('Please apply android plugin first')
             }
+            if (project.patchCreator.disabled) {
+                logger.warn('Patch generation is disabled, will not create and upload patch files')
+                logger.warn('And apk created during this build CANNOT be patched in future')
+                return
+            }
+
             project.android.applicationVariants.each { variant ->
                 def transformTask = project.tasks.findByName("transformClassesWithDexFor${variant.name.capitalize()}")
                 if (!transformTask) {

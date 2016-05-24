@@ -23,6 +23,7 @@ android {
 }
 
 patchCreator {
+    disabled = false
     buildHistoriesFilter = [
             ['dexMapping': 'patch.dex.ee08763e-d522-4dee-95fa-f225c6cdf46c.txt']
     ]
