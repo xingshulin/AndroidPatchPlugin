@@ -2,6 +2,7 @@ import com.xingshulin.singularity.PatchPlugin
 
 apply plugin: 'com.android.application'
 apply plugin: PatchPlugin
+apply plugin: 'com.getkeepsafe.dexcount'
 
 android {
     compileSdkVersion 23
@@ -16,14 +17,14 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
 
 patchCreator {
-    disabled = false
+    disabled = true
     buildHistoriesFilter = [
             ['dexMapping': 'patch.dex.ee08763e-d522-4dee-95fa-f225c6cdf46c.txt']
     ]
