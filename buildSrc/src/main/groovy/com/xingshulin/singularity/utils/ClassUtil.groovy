@@ -17,7 +17,7 @@ class ClassUtil {
                     @Override
                     void visitInsn(int opcode) {
                         if ("<init>".equals(name) && opcode == Opcodes.RETURN) {
-                            super.visitLdcInsn(Type.getType("Lcom/xingshulin/zeus/Hack;"));
+                            super.visitLdcInsn(Type.getType("Lcom/xingshulin/singularity/Hack;"));
                         }
                         super.visitInsn(opcode);
                     }
