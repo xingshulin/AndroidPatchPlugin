@@ -1,4 +1,4 @@
-package com.xingshulin.singularity.hotfix;
+package com.xingshulin.singularity.core;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
