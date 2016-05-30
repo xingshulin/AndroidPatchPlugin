@@ -1,9 +1,12 @@
 package com.xingshulin.singularity.hotfix;
 
-import com.xingshulin.singularity.core.PatchDownloaderKt;
+import android.content.Context;
+import com.xingshulin.singularity.core.PatchKt;
 
 public class PatchManager {
-    public static void install() {
-        PatchDownloaderKt.download("Hello Kotlin");
+    private static Context applicationContext;
+    public static void install(Context context) {
+        applicationContext = context;
+        PatchKt.installPatch(context);
     }
 }
