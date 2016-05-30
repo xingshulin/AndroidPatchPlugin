@@ -4,9 +4,12 @@ import android.content.Context
 import com.xingshulin.singularity.utils.ArrayUtils.concat
 import dalvik.system.DexClassLoader
 import java.io.File
-import java.lang.reflect.Field
 
-fun installPatch(context: Context) {
+fun discoverAndApply(context: Context) {
+
+}
+
+fun configure(context: Context) {
     val rootDir = ensureDirExists(context.filesDir, "hotfix")
     val apk = copyHelperAPK(context, rootDir)
     val dexOptDir = ensureDirExists(rootDir, "dexOpt")
@@ -28,16 +31,6 @@ fun loadApk(apk: File, dexDir: File, dexOptDir: File) {
     setField(pathList, pathList.javaClass, "dexElements", concat)
 }
 
-fun getDexElements(dexListObject: Any): Array<*> {
-    return getFieldValue(dexListObject, dexListObject.javaClass, "dexElements") as Array<*>
-}
-
-fun getPathList(baseDexClassLoader: ClassLoader): Any {
-    return getFieldValue(baseDexClassLoader, Class.forName("dalvik.system.BaseDexClassLoader"), "pathList")
-}
-
-private fun getPathClassLoader() = object {}.javaClass.classLoader
-
 private fun ensureDirExists(parent: File?, dir: String): File {
     val rootDir = File(parent, dir)
     rootDir.mkdirs()
@@ -55,17 +48,3 @@ private fun copyHelperAPK(context: Context, toDir: File): File {
     return copyTo
 }
 
-fun getFieldValue(target: Any, javaClass: Class<*>, field: String): Any {
-    val declaredField = getField(field, javaClass)
-    return declaredField.get(target)
-}
-
-fun setField(target: Any, javaClass: Class<*>, field: String, value: Any) {
-    getField(field, javaClass).set(target, value)
-}
-
-private fun getField(field: String, javaClass: Class<*>): Field {
-    val declaredField = javaClass.getDeclaredField(field)
-    declaredField.isAccessible = true
-    return declaredField
-}
