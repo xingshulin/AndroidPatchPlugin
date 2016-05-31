@@ -118,7 +118,7 @@ class PatchUploader {
         formBuilder.addEncoded('appBuild', patchOptions.get(KEY_VERSION_CODE))
         formBuilder.addEncoded('version', '1')
         formBuilder.addEncoded("uri", patchFile.name)
-        formBuilder.addEncoded("crc", shaHex(patchFile.bytes))
+        formBuilder.addEncoded("sha1", shaHex(patchFile.bytes))
         formBuilder.addEncoded("buildDeviceId", patchOptions.get(KEY_BUILD_DEVICE_ID))
         formBuilder.addEncoded("buildTimestamp", patchOptions.get(KEY_BUILD_TIMESTAMP))
         def request = builder.post(formBuilder.build()).build()

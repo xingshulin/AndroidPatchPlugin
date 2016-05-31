@@ -1,12 +1,35 @@
 package com.xingshulin.singularity.core
 
 import android.content.Context
+import android.content.pm.PackageManager.GET_CONFIGURATIONS
 import com.xingshulin.singularity.utils.ArrayUtils.concat
+import com.xingshulin.singularity.utils.DigestUtils.shaHex
 import dalvik.system.DexClassLoader
+import org.json.JSONObject
 import java.io.File
 
 fun discoverAndApply(context: Context) {
+    val patch = File("${context.filesDir}/patch/${appVersionCode(context)}/", "patch.jar")
+    if (patch.exists() && patch.isValidPatchFile(context)) {
+        apply(patch)
+    }
+}
 
+fun apply(patch: File) {
+    println("patch = ${patch.absolutePath}")
+}
+
+fun File.isValidPatchFile(context: Context): Boolean {
+    val preferences = context.getSharedPreferences("hotfix", Context.MODE_PRIVATE)
+    val json = preferences.getString("patch", "{}")
+    val patch = JSONObject(json)
+    val sha1 = shaHex(this.readBytes())
+    return sha1.equals(patch.getString("sha1"))
+}
+
+fun appVersionCode(context: Context): Int {
+    val packageManager = context.packageManager;
+    return packageManager.getPackageInfo(context.packageName, GET_CONFIGURATIONS).versionCode;
 }
 
 fun configure(context: Context) {
