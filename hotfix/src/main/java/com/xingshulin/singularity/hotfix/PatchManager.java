@@ -1,7 +1,6 @@
 package com.xingshulin.singularity.hotfix;
 
 import android.content.Context;
-import com.xingshulin.singularity.core.PatchKt;
 
 import static com.xingshulin.singularity.core.PatchKt.configure;
 import static com.xingshulin.singularity.core.PatchKt.discoverAndApply;
