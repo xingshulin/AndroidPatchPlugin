@@ -9,14 +9,15 @@ import org.json.JSONObject
 import java.io.File
 
 fun discoverAndApply(context: Context) {
-    val patch = File("${context.filesDir}/patch/${appVersionCode(context)}/", "patch.jar")
+    val patch = File("${context.filesDir}/hotfix/${appVersionCode(context)}/", "patch.jar")
     if (patch.exists() && patch.isValidPatchFile(context)) {
         apply(patch)
     }
 }
 
 fun apply(patch: File) {
-    println("patch = ${patch.absolutePath}")
+    val dexOptDir = ensureDirExists(patch.parentFile, "dexOpt")
+    loadPatch(patch, dexOptDir)
 }
 
 fun File.isValidPatchFile(context: Context): Boolean {
@@ -34,15 +35,15 @@ fun appVersionCode(context: Context): Int {
 
 fun configure(context: Context) {
     val rootDir = ensureDirExists(context.filesDir, "hotfix")
-    val apk = copyHelperAPK(context, rootDir)
-    val dexOptDir = ensureDirExists(rootDir, "dexOpt")
-    val dexDir = ensureDirExists(rootDir, "dex")
+    val apkDir = ensureDirExists(rootDir, "default")
+    val dexOptDir = ensureDirExists(apkDir, "dexOpt")
+    val apk = copyHelperAPK(context, apkDir)
 
-    loadApk(apk, dexDir, dexOptDir)
+    loadPatch(apk, dexOptDir)
 }
 
-fun loadApk(apk: File, dexDir: File, dexOptDir: File) {
-    val dexPath = dexDir.absolutePath
+fun loadPatch(dexFile: File, dexOptDir: File) {
+    val dexPath = dexFile.absolutePath
     val defaultDexOptPath = dexOptDir.absolutePath
 
     val dexClassLoader = DexClassLoader(dexPath, defaultDexOptPath, dexPath, getPathClassLoader())
