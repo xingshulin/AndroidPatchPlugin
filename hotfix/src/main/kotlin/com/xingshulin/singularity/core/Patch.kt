@@ -7,13 +7,52 @@ import com.xingshulin.singularity.utils.DigestUtils.shaHex
 import dalvik.system.DexClassLoader
 import org.json.JSONObject
 import java.io.File
+import java.net.URL
+import kotlin.concurrent.thread
+
+val KEY_URI = "uri"
+val KEY_SHA = "sha1"
+val DOMAIN = "http://localhost:8080"
+
+fun download(context: Context) {
+    thread {
+        val result = URL("$DOMAIN/patches?appName=${context.packageName}&appBuild=${context.appVersionCode()}").readText()
+        val patchConfig = JSONObject(result)
+        if (patchConfig.isValidPatch() && patchConfig.needDownload(context)) {
+            doDownload(patchConfig, context.patchFile())
+        }
+    }
+}
+
+fun doDownload(patchConfig: JSONObject, patchFile: File) {
+    val fileUrl = URL("$DOMAIN/tokens?type=get&key=${patchConfig.getString(KEY_URI)}").readText()
+    val connection = URL(fileUrl).openConnection()
+    connection.doInput = true
+    connection.connect()
+    if (!patchFile.exists()) {
+        patchFile.parentFile.mkdirs()
+        patchFile.createNewFile()
+    }
+    patchFile.writeBytes(connection.inputStream.readBytes())
+}
+
+fun JSONObject.needDownload(context: Context): Boolean {
+    val hotfixConfig = context.getHotfixConfig()
+    return !this.getString(KEY_SHA).equals(hotfixConfig.getString(KEY_SHA))
+}
+
+fun JSONObject.isValidPatch(): Boolean {
+    return !this.isNull(KEY_URI) && !this.isNull(KEY_SHA)
+}
 
 fun discoverAndApply(context: Context) {
-    val patch = File("${context.filesDir}/hotfix/${appVersionCode(context)}/", "patch.jar")
+    val patch = context.patchFile()
     if (patch.exists() && patch.isValidPatchFile(context)) {
         apply(patch)
     }
 }
+
+private fun Context.patchFile() = File("${this.filesDir}/hotfix/${this.appVersionCode()}/", "patch.jar")
 
 fun apply(patch: File) {
     val dexOptDir = ensureDirExists(patch.parentFile, "dexOpt")
@@ -21,26 +60,32 @@ fun apply(patch: File) {
 }
 
 fun File.isValidPatchFile(context: Context): Boolean {
-    val preferences = context.getSharedPreferences("hotfix", Context.MODE_PRIVATE)
-    val json = preferences.getString("patch", "{}")
-    val patch = JSONObject(json)
+    val patch = context.getHotfixConfig()
     val sha1 = shaHex(this.readBytes())
-    return sha1.equals(patch.getString("sha1"))
+    return sha1.equals(patch.getString(KEY_SHA))
 }
 
-fun appVersionCode(context: Context): Int {
-    val packageManager = context.packageManager;
-    return packageManager.getPackageInfo(context.packageName, GET_CONFIGURATIONS).versionCode;
+private fun Context.getHotfixConfig(): JSONObject {
+    val preferences = this.getSharedPreferences("hotfix", Context.MODE_PRIVATE)
+    val json = preferences.getString("patch", "{}")
+    val patch = JSONObject(json)
+    return patch
+}
+
+fun Context.appVersionCode(): Int {
+    val packageManager = this.packageManager;
+    return packageManager.getPackageInfo(this.packageName, GET_CONFIGURATIONS).versionCode;
 }
 
 fun configure(context: Context) {
-    val rootDir = ensureDirExists(context.filesDir, "hotfix")
-    val apkDir = ensureDirExists(rootDir, "default")
+    val apkDir = ensureDirExists(getHotfixRoot(context), "default")
     val dexOptDir = ensureDirExists(apkDir, "dexOpt")
     val apk = copyHelperAPK(context, apkDir)
 
     loadPatch(apk, dexOptDir)
 }
+
+private fun getHotfixRoot(context: Context) = ensureDirExists(context.filesDir, "hotfix")
 
 fun loadPatch(dexFile: File, dexOptDir: File) {
     val dexPath = dexFile.absolutePath
