@@ -9,13 +9,10 @@ import static com.xingshulin.singularity.core.PatchKt.discoverAndApply;
 public class PatchManager {
     public static void install(Context context) {
         configure(context);
-    }
-
-    public static void applyPatch(Context context) {
         discoverAndApply(context);
     }
 
-    public static void pull(Context context) {
+    public static void checkUpdates(Context context) {
         PatchKt.download(context);
     }
 }

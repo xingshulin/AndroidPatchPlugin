@@ -8,7 +8,7 @@ public class SampleApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        PatchManager.applyPatch(this);
+        PatchManager.checkUpdates(this);
     }
 
     @Override

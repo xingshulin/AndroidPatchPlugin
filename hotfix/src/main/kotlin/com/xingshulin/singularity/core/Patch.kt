@@ -2,6 +2,7 @@ package com.xingshulin.singularity.core
 
 import android.content.Context
 import android.content.pm.PackageManager.GET_CONFIGURATIONS
+import android.util.Log
 import com.xingshulin.singularity.utils.ArrayUtils.concat
 import com.xingshulin.singularity.utils.DigestUtils.shaHex
 import dalvik.system.DexClassLoader
@@ -16,10 +17,14 @@ val DOMAIN = "http://localhost:8080"
 
 fun download(context: Context) {
     thread {
-        val result = URL("$DOMAIN/patches?appName=${context.packageName}&appBuild=${context.appVersionCode()}").readText()
-        val patchConfig = JSONObject(result)
-        if (patchConfig.isValidPatch() && patchConfig.needDownload(context)) {
-            doDownload(patchConfig, context.patchFile())
+        try {
+            val result = URL("$DOMAIN/patches?appName=${context.packageName}&appBuild=${context.appVersionCode()}").readText()
+            val patchConfig = JSONObject(result)
+            if (patchConfig.isValidPatch() && patchConfig.needDownload(context)) {
+                doDownload(patchConfig, context.patchFile())
+            }
+        } catch (e: Exception) {
+            Log.e("Hotfix", e.message, e)
         }
     }
 }
