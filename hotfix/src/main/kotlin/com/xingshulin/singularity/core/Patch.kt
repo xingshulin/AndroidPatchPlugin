@@ -6,11 +6,13 @@ import android.util.Log
 import com.xingshulin.singularity.utils.ArrayUtils.concat
 import com.xingshulin.singularity.utils.DigestUtils.shaHex
 import dalvik.system.DexClassLoader
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.net.URL
 import kotlin.concurrent.thread
 
+val TAG = "hotfix"
 val KEY_URI = "uri"
 val KEY_SHA = "sha1"
 val DOMAIN = "http://localhost:8080"
@@ -19,12 +21,14 @@ fun download(context: Context) {
     thread {
         try {
             val result = URL("$DOMAIN/patches?appName=${context.packageName}&appBuild=${context.appVersionCode()}").readText()
-            val patchConfig = JSONObject(result)
+            if (JSONArray(result).length() == 0) return@thread
+
+            val patchConfig = JSONArray(result).getJSONObject(0)
             if (patchConfig.isValidPatch() && patchConfig.needDownload(context)) {
                 doDownload(patchConfig, context.patchFile())
             }
         } catch (e: Exception) {
-            Log.e("Hotfix", e.message, e)
+            Log.e(TAG, e.message, e)
         }
     }
 }
