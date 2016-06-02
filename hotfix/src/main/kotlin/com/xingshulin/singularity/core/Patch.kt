@@ -15,12 +15,15 @@ import kotlin.concurrent.thread
 val TAG = "hotfix"
 val KEY_URI = "uri"
 val KEY_SHA = "sha1"
-val DOMAIN = "http://localhost:8080"
+val DOMAIN = "http://10.1.100.137:8080"
 
 fun download(context: Context) {
     thread {
         try {
-            val result = URL("$DOMAIN/patches?appName=${context.packageName}&appBuild=${context.appVersionCode()}").readText()
+            val address = "$DOMAIN/patches?appName=${context.packageName}&appBuild=${context.appVersionCode()}"
+            Log.i(TAG, "Start pulling patch @ " + address)
+            val result = URL(address).readText()
+            Log.v(TAG, result)
             if (JSONArray(result).length() == 0) return@thread
 
             val patchConfig = JSONArray(result).getJSONObject(0)
@@ -35,6 +38,7 @@ fun download(context: Context) {
 
 fun doDownload(patchConfig: JSONObject, patchFile: File) {
     val fileUrl = URL("$DOMAIN/tokens?type=get&key=${patchConfig.getString(KEY_URI)}").readText()
+    Log.v(TAG, "downloading patch file " + fileUrl)
     val connection = URL(fileUrl).openConnection()
     connection.doInput = true
     connection.connect()
@@ -47,7 +51,7 @@ fun doDownload(patchConfig: JSONObject, patchFile: File) {
 
 fun JSONObject.needDownload(context: Context): Boolean {
     val hotfixConfig = context.getHotfixConfig()
-    return !this.getString(KEY_SHA).equals(hotfixConfig.getString(KEY_SHA))
+    return !this.getString(KEY_SHA).equals(hotfixConfig.optString(KEY_SHA, ""))
 }
 
 fun JSONObject.isValidPatch(): Boolean {

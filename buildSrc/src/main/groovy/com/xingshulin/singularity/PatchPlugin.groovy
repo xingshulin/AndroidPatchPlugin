@@ -19,7 +19,7 @@ import static java.lang.System.currentTimeMillis
 import static java.util.UUID.randomUUID
 
 class PatchPlugin implements Plugin<Project> {
-    HashSet<String> excludeClass
+    HashSet<String> excludeClass = new HashSet<>()
     HashMap<String, String> transformedFiles = new HashMap<>()
     HashMap<String, String> buildOptions = new HashMap<>()
     static private Logger logger = LoggerFactory.getLogger('android-patch')
@@ -73,8 +73,8 @@ class PatchPlugin implements Plugin<Project> {
             }
         }
 
-        if (!generatedPatchDir.listFiles().size()) {
-            logger.warn('Not changes found for generating patch file, just skip this build.')
+        if (generatedPatchDir.listFiles().size() == 0) {
+            logger.warn('No changes found for generating patch file, just skip this build.')
             return
         }
         def patchFile = dex(project, generatedPatchDir)

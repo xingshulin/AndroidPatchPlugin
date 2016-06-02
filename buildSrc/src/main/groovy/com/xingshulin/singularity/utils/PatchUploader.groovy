@@ -31,6 +31,7 @@ class PatchUploader {
             throw new GradleException('Need to specify more than 1 params')
         }
         Object object = downloadBuildHistories(buildOptions)
+        if (!object[0]) return new HashMap<String, String>(0)
         String mapping = object[0]["dexMapping"]
         logger.debug("Found mapping file ${mapping}")
         def token = getToken("get", mapping)
@@ -63,7 +64,7 @@ class PatchUploader {
     }
 
     static void uploadBuildHistory(HashMap<String, String> buildHistorySettings, String fileName) {
-        logger.quiet('Upload build params')
+        logger.quiet('Upload build params ' + buildHistorySettings.inspect())
         def builder = new Request.Builder().url("${host}/buildHistories")
         def formBuilder = new FormBody.Builder()
         for (String key : buildHistorySettings.keySet()) {
@@ -104,13 +105,14 @@ class PatchUploader {
     }
 
     static void uploadPatch(Map<String, String> patchOptions, File patchFile) {
+        logger.quiet('Patch file created @ ' + patchFile.absolutePath)
         String uploadToken = getToken("put", patchFile.name)
         uploadFile(uploadToken, patchFile)
         uploadPatchInfo(patchOptions, patchFile)
     }
 
     static void uploadPatchInfo(Map<String, String> patchOptions, File patchFile) {
-        logger.quiet('Upload patch info')
+        logger.quiet('Upload patch info ' + patchOptions.inspect())
         def builder = new Request.Builder().url("${host}/patches")
         def formBuilder = new FormBody.Builder()
         formBuilder.addEncoded('appName', patchOptions.get(KEY_PACKAGE_NAME))
