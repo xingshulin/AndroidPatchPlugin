@@ -24,9 +24,9 @@ android {
 }
 
 patchCreator {
-    disabled = false
+    disabled = true
     buildHistoriesFilter = [
-            ["buildTimestamp": "1464868966547"]
+            ["buildTimestamp": "1464935596366"]
     ]
 }
 

@@ -4,15 +4,17 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
-import com.xingshulin.singularity.hotfix.PatchManager;
 
 public class MainActivity extends AppCompatActivity {
+    static {
+        Log.d("hotfix", "Current version 2");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        System.out.println(123);
-        Log.d(MainActivity.class.getSimpleName(), "aaaaaaaaaaaaa");
         setContentView(R.layout.activity_main);
+        TextView textView = (TextView) findViewById(R.id.text_view);
+        textView.setText("Hello World version 2!");
     }
 }
