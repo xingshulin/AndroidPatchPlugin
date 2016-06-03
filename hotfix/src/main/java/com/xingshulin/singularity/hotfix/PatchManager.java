@@ -12,7 +12,7 @@ public class PatchManager {
         discoverAndApply(context);
     }
 
-    public static void checkUpdates(Context context) {
-        PatchKt.download(context);
+    public static void checkForUpdates(Context context) {
+        PatchKt.checkForUpdates(context);
     }
 }
