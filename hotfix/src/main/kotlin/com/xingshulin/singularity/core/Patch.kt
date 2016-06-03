@@ -15,7 +15,7 @@ import kotlin.concurrent.thread
 val TAG = "hotfix"
 val KEY_URI = "uri"
 val KEY_SHA = "sha1"
-val DOMAIN = "http://10.1.100.137:8080"
+val DOMAIN = "http://localhost:8080"
 
 fun download(context: Context) {
     thread {
@@ -29,11 +29,16 @@ fun download(context: Context) {
             val patchConfig = JSONArray(result).getJSONObject(0)
             if (patchConfig.isValidPatch() && patchConfig.needDownload(context)) {
                 doDownload(patchConfig, context.patchFile())
+                context.saveHotfixConfig(patchConfig)
             }
         } catch (e: Exception) {
             Log.e(TAG, e.message, e)
         }
     }
+}
+
+fun Context.saveHotfixConfig(patchConfig: JSONObject) {
+    this.getSharedPreferences("hotfix", Context.MODE_PRIVATE).edit().putString("patch", patchConfig.toString()).apply()
 }
 
 fun doDownload(patchConfig: JSONObject, patchFile: File) {
@@ -42,16 +47,25 @@ fun doDownload(patchConfig: JSONObject, patchFile: File) {
     val connection = URL(fileUrl).openConnection()
     connection.doInput = true
     connection.connect()
-    if (!patchFile.exists()) {
-        patchFile.parentFile.mkdirs()
-        patchFile.createNewFile()
+
+    if (patchFile.exists()) {
+        patchFile.delete()
     }
-    patchFile.writeBytes(connection.inputStream.readBytes())
+    patchFile.parentFile.mkdirs()
+    val inputStream = connection.inputStream
+    patchFile.writeBytes(inputStream.readBytes())
+    inputStream.close()
+    val fileSha1 = shaHex(patchFile.readBytes())
+    if (fileSha1.equals(patchConfig.sha())) {
+        Log.v(TAG, "file downloaded, sha1 is $fileSha1")
+    } else {
+        Log.w(TAG, "the downloaded file failed to pass sha check")
+    }
 }
 
 fun JSONObject.needDownload(context: Context): Boolean {
     val hotfixConfig = context.getHotfixConfig()
-    return !this.getString(KEY_SHA).equals(hotfixConfig.optString(KEY_SHA, ""))
+    return !this.getString(KEY_SHA).equals(hotfixConfig.sha())
 }
 
 fun JSONObject.isValidPatch(): Boolean {
@@ -60,8 +74,11 @@ fun JSONObject.isValidPatch(): Boolean {
 
 fun discoverAndApply(context: Context) {
     val patch = context.patchFile()
-    if (patch.exists() && patch.isValidPatchFile(context)) {
-        apply(patch)
+    if (!patch.exists()) return
+    if (patch.isValidPatchFile(context)) {
+        return apply(patch)
+    } else {
+        patch.delete()
     }
 }
 
@@ -75,8 +92,10 @@ fun apply(patch: File) {
 fun File.isValidPatchFile(context: Context): Boolean {
     val patch = context.getHotfixConfig()
     val sha1 = shaHex(this.readBytes())
-    return sha1.equals(patch.getString(KEY_SHA))
+    return sha1.equals(patch.sha())
 }
+
+private fun JSONObject.sha() = this.optString(KEY_SHA, "")
 
 private fun Context.getHotfixConfig(): JSONObject {
     val preferences = this.getSharedPreferences("hotfix", Context.MODE_PRIVATE)
@@ -101,6 +120,7 @@ fun configure(context: Context) {
 private fun getHotfixRoot(context: Context) = ensureDirExists(context.filesDir, "hotfix")
 
 fun loadPatch(dexFile: File, dexOptDir: File) {
+    Log.d(TAG, "loading patch file ${dexFile.absolutePath}")
     val dexPath = dexFile.absolutePath
     val defaultDexOptPath = dexOptDir.absolutePath
 
@@ -108,7 +128,7 @@ fun loadPatch(dexFile: File, dexOptDir: File) {
     val baseDexElements = getDexElements(getPathList(getPathClassLoader()))
     val newDexElements = getDexElements(getPathList(dexClassLoader))
 
-    val concat = concat(baseDexElements, newDexElements)
+    val concat = concat(newDexElements, baseDexElements) //order is important!
     val pathList = getPathList(getPathClassLoader())
     setField(pathList, pathList.javaClass, "dexElements", concat)
 }
