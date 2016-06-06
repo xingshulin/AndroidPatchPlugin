@@ -13,7 +13,7 @@ import static com.xingshulin.singularity.utils.ClassUtil.patchClass
 import static com.xingshulin.singularity.utils.FileUtils.dirFilter
 import static com.xingshulin.singularity.utils.MapUtils.merge
 import static com.xingshulin.singularity.utils.MapUtils.nullSafePut
-import static com.xingshulin.singularity.utils.PatchUploader.*
+import static PatchUploader.*
 import static groovy.io.FileType.FILES
 import static java.lang.System.currentTimeMillis
 import static java.util.UUID.randomUUID
