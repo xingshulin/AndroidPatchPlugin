@@ -114,7 +114,7 @@ class PatchUploader {
         logger.quiet('Upload patch info ' + patchOptions.inspect())
         def builder = new Request.Builder().url("${host}/patches")
         def formBuilder = new FormBody.Builder()
-        formBuilder.addEncoded('appName', patchOptions.get(KEY_PACKAGE_NAME))
+        formBuilder.addEncoded('packageName', patchOptions.get(KEY_PACKAGE_NAME))
         formBuilder.addEncoded('appVersion', patchOptions.get(KEY_VERSION_NAME))
         formBuilder.addEncoded('appBuild', patchOptions.get(KEY_VERSION_CODE))
         formBuilder.addEncoded('version', '1')

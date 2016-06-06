@@ -13,7 +13,7 @@ import kotlin.concurrent.thread
 fun download(context: Context) {
     thread {
         try {
-            val address = "$DOMAIN/patches?appName=${context.packageName}&appBuild=${context.appVersionCode()}"
+            val address = "$DOMAIN/patches?packageName=${context.packageName}&appBuild=${context.appVersionCode()}"
             Log.i(TAG, "Start pulling patch @ " + address)
             val result = URL(address).readText()
             Log.v(TAG, result)
