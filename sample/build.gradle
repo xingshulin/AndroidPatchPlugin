@@ -24,10 +24,7 @@ android {
 }
 
 patchCreator {
-    disabled = true
-    buildHistoriesFilter = [
-            ["buildTimestamp": "1464935596366"]
-    ]
+    accessKey = "ryxuDuc8S"
 }
 
 dependencies {

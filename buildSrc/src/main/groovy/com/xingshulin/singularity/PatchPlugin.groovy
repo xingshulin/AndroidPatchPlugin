@@ -38,6 +38,8 @@ class PatchPlugin implements Plugin<Project> {
                 return
             }
 
+            setAccessKey(project.patchCreator.accessKey)
+
             project.android.applicationVariants.each { variant ->
                 def transformTask = project.tasks.findByName("transformClassesWithDexFor${variant.name.capitalize()}")
                 if (!transformTask) {
