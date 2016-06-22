@@ -25,6 +25,10 @@ android {
 
 patchCreator {
     accessKey = "ryxuDuc8S"
+    disabled = true
+    filter = [
+            "buildTimestamp": 1466505366262
+    ]
 }
 
 dependencies {
