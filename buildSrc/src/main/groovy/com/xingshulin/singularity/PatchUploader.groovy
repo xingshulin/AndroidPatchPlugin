@@ -37,7 +37,7 @@ class PatchUploader {
 
     private static Object downloadBuildHistories(HashMap<String, String> buildOptions) {
         def params = buildOptions.collect { key, value ->
-            return "${key}=${encode(value, "UTF-8")}"
+            return "${key}=${encode(value.toString(), "UTF-8")}"
         }
         def request = new Request.Builder()
                 .url("${host}/buildHistories?${params.join('&')}")

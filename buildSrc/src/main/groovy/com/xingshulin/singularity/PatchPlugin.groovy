@@ -93,7 +93,7 @@ class PatchPlugin implements Plugin<Project> {
     }
 
     Map<String, String> findChangedFiles(project) {
-        HashMap<String, String> filter = project.patchCreator.buildHistoriesFilter
+        HashMap<String, String> filter = project.patchCreator.filter
         merge(filter, buildOptions, KEY_PACKAGE_NAME, KEY_VERSION_NAME, KEY_VERSION_CODE, KEY_BUILD_DEVICE_ID)
         def lastTransformedFiles = downloadBuildHistory(filter, getPatchDir(project))
         diff(lastTransformedFiles, transformedFiles)
