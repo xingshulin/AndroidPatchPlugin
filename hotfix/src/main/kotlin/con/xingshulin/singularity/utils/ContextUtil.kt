@@ -5,8 +5,17 @@ import android.content.pm.PackageManager.GET_CONFIGURATIONS
 import org.json.JSONObject
 import java.io.File
 
+internal fun Context.saveHotfixConfig(key: String, value: String) {
+    this.getSharedPreferences("hotfix", Context.MODE_PRIVATE).edit().putString(key, value).apply()
+}
+
 internal fun Context.saveHotfixConfig(patchConfig: JSONObject) {
     this.getSharedPreferences("hotfix", Context.MODE_PRIVATE).edit().putString("patch", patchConfig.toString()).apply()
+}
+
+internal fun Context.getHotfixConfig(key: String): String {
+    val preferences = this.getSharedPreferences("hotfix", Context.MODE_PRIVATE)
+    return preferences.getString(key, "")
 }
 
 internal fun Context.getHotfixConfig(): JSONObject {

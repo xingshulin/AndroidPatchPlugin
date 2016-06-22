@@ -8,6 +8,7 @@ import org.json.JSONObject
 import java.io.File
 import java.net.URL
 import com.xingshulin.singularity.utils.DigestUtils.shaHex
+import java.nio.charset.Charset
 import kotlin.concurrent.thread
 
 fun download(context: Context) {
@@ -15,13 +16,14 @@ fun download(context: Context) {
         try {
             val address = "$DOMAIN/patches?packageName=${context.packageName}&appBuild=${context.appVersionCode()}"
             Log.i(TAG, "Start pulling patch @ " + address)
-            val result = URL(address).readText()
+            val token = context.getHotfixConfig("token")
+            val result = readText(address, token)
             Log.v(TAG, result)
             if (JSONArray(result).length() == 0) return@thread
 
             val patchConfig = JSONArray(result).getJSONObject(0)
             if (patchConfig.isValidPatch() && patchConfig.needDownload(context.getHotfixConfig())) {
-                doDownload(patchConfig, context.patchFile())
+                doDownload(patchConfig, context.patchFile(), token)
                 context.saveHotfixConfig(patchConfig)
             }
         } catch (e: Exception) {
@@ -30,8 +32,8 @@ fun download(context: Context) {
     }
 }
 
-fun doDownload(patchConfig: JSONObject, patchFile: File) {
-    val fileUrl = URL("${DOMAIN}/tokens?type=get&key=${patchConfig.getString(KEY_URI)}").readText()
+fun doDownload(patchConfig: JSONObject, patchFile: File, token: String) {
+    val fileUrl = readText("${DOMAIN}/tokens?type=get&key=${patchConfig.getString(KEY_URI)}", token)
     Log.v(TAG, "downloading patch file " + fileUrl)
     val connection = URL(fileUrl).openConnection()
     connection.doInput = true
@@ -50,4 +52,15 @@ fun doDownload(patchConfig: JSONObject, patchFile: File) {
     } else {
         Log.w(TAG, "the downloaded file failed to pass sha check")
     }
+}
+
+private fun readText(address: String, token: String): String {
+    val connection = URL(address).openConnection()
+    connection.setRequestProperty("Authorization", "Bearer $token")
+    connection.doInput = true
+    connection.connect()
+    val result = connection.inputStream.use {
+        it.readBytes()
+    }.toString(Charset.defaultCharset())
+    return result
 }

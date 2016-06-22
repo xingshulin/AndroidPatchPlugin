@@ -3,10 +3,7 @@ package com.xingshulin.singularity.core
 import android.content.Context
 import android.util.Log
 import com.xingshulin.singularity.utils.ArrayUtils.concat
-import con.xingshulin.singularity.utils.ensureSubDirExists
-import con.xingshulin.singularity.utils.getHotfixRoot
-import con.xingshulin.singularity.utils.isValidPatchFile
-import con.xingshulin.singularity.utils.patchFile
+import con.xingshulin.singularity.utils.*
 import dalvik.system.DexClassLoader
 import java.io.File
 
@@ -19,7 +16,9 @@ internal fun checkForUpdates(context: Context) {
     download(context)
 }
 
-internal fun configure(context: Context) {
+fun configure(context: Context, token: String) {
+    context.saveHotfixConfig("token", token)
+
     val apkDir = ensureSubDirExists(context.getHotfixRoot(), "default")
     val dexOptDir = ensureSubDirExists(apkDir, "dexOpt")
     val apk = copyHelperAPK(context, apkDir)
