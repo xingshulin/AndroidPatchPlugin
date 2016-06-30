@@ -23,7 +23,7 @@ class PatchUploader {
     public static final String KEY_BUILD_DEVICE_ID = 'buildDeviceId'
 
     static private OkHttpClient client = new OkHttpClient()
-    static private String host = "http://localhost:8080"
+    static private String host = "http://singularity.xingshulin.com"
     static private Logger logger = LoggerFactory.getLogger('android-patch')
 
     static private String securityKey

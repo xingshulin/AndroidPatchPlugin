@@ -10,7 +10,7 @@ import java.io.File
 val TAG = "hotfix"
 val KEY_URI = "uri"
 val KEY_SHA = "sha1"
-val DOMAIN = "http://localhost:8080"
+val DOMAIN = "http://singularity.xingshulin.com"
 
 internal fun checkForUpdates(context: Context) {
     download(context)
