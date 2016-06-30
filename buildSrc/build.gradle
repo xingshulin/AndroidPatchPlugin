@@ -1,4 +1,14 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7'
+    }
+}
+apply plugin: 'com.jfrog.bintray'
 apply plugin: 'groovy'
+apply plugin: 'maven-publish'
 
 repositories {
     jcenter()
@@ -8,4 +18,34 @@ dependencies {
     compile localGroovy()
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'commons-codec:commons-codec:1.6'
+}
+
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            groupId 'com.xingshulin.singularity'
+            artifactId 'patch-generator-plugin'
+            version '0.1.1'
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['MyPublication']
+    pkg {
+        repo = 'maven'
+        name = 'android-patch-generator'
+        userOrg = 'xingshulin'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/xingshulin/AndroidPatchPlugin.git'
+        version {
+            name = '0.1.1'
+            desc = 'android patch generator plugin'
+            released  = new Date()
+            vcsTag = '0.1.0'
+        }
+    }
 }
