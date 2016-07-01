@@ -20,7 +20,7 @@ dependencies {
     compile 'commons-codec:commons-codec:1.6'
 }
 
-def currentVersion = '0.1.3'
+def currentVersion = '0.1.4'
 publishing {
     publications {
         MyPublication(MavenPublication) {
@@ -41,6 +41,8 @@ bintray {
         name = 'android-patch-generator'
         userOrg = 'xingshulin'
         licenses = ['Apache-2.0']
+        publish = true
+        publicDownloadNumbers = true
         vcsUrl = 'https://github.com/xingshulin/AndroidPatchPlugin.git'
         version {
             name = currentVersion
