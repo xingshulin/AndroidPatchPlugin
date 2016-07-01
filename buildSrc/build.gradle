@@ -20,14 +20,26 @@ dependencies {
     compile 'commons-codec:commons-codec:1.6'
 }
 
-def currentVersion = '0.1.4'
+def currentVersion = '0.1.7'
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier "sources"
+}
+
 publishing {
     publications {
         MyPublication(MavenPublication) {
             from components.java
+            artifact sourceJar
             groupId 'com.xingshulin.singularity'
             artifactId 'patch-generator-plugin'
             version currentVersion
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'A gradle plugin for generation android app hotfix')
+            }
         }
     }
 }
@@ -45,10 +57,9 @@ bintray {
         publicDownloadNumbers = true
         vcsUrl = 'https://github.com/xingshulin/AndroidPatchPlugin.git'
         version {
+            desc = 'android patch generator v' + currentVersion
             name = currentVersion
-            desc = 'android patch generator plugin'
-            released  = new Date()
-            vcsTag = currentVersion
+            released = new Date()
         }
     }
 }
