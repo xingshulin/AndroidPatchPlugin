@@ -1,4 +1,4 @@
-package com.xingshulin.singularity
+package com.xingshulin.singularity.patch
 
 import groovy.json.JsonSlurper
 import okhttp3.FormBody

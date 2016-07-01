@@ -1,4 +1,4 @@
-package com.xingshulin.singularity
+package com.xingshulin.singularity.patch
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -18,7 +18,7 @@ import static groovy.io.FileType.FILES
 import static java.lang.System.currentTimeMillis
 import static java.util.UUID.randomUUID
 
-class PatchPlugin implements Plugin<Project> {
+class PatchGeneratorPlugin implements Plugin<Project> {
     HashSet<String> excludeClass = new HashSet<>()
     HashMap<String, String> transformedFiles = new HashMap<>()
     HashMap<String, String> buildOptions = new HashMap<>()
