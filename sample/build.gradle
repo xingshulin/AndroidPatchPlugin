@@ -6,7 +6,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.xingshulin.singularity:patch-generator-plugin:0.1.4'
+        classpath 'com.xingshulin.singularity:patch-generator-plugin:0.1.7'
     }
 }
 

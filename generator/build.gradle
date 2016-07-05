@@ -7,8 +7,8 @@ buildscript {
     }
 }
 apply plugin: 'com.jfrog.bintray'
-apply plugin: 'groovy'
 apply plugin: 'maven-publish'
+apply plugin: 'groovy'
 
 repositories {
     jcenter()
@@ -20,7 +20,7 @@ dependencies {
     compile 'commons-codec:commons-codec:1.6'
 }
 
-def currentVersion = '0.1.7'
+def currentVersion = '0.1.8'
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource

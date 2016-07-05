@@ -1,5 +1,18 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7'
+    }
+}
+
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+
+repositories {
+    mavenCentral()
+}
 
 android {
     compileSdkVersion 23
@@ -28,6 +41,44 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
-repositories {
-    mavenCentral()
+
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+def currentVersion = '0.3.0'
+
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            artifact "$buildDir/outputs/aar/${project.getName()}-release.aar"
+            groupId 'com.xingshulin.singularity'
+            artifactId 'hotfix-plugin'
+            version currentVersion
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description', 'An android library for applying hotfix downloaded form http://singularity.xingshulin.com')
+            }
+        }
+    }
 }
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['MyPublication']
+    pkg {
+        repo = 'maven'
+        name = 'android-app-hotfix'
+        userOrg = 'xingshulin'
+        licenses = ['Apache-2.0']
+        publish = true
+        publicDownloadNumbers = true
+        vcsUrl = 'https://github.com/xingshulin/AndroidPatchPlugin.git'
+        version {
+            desc = 'android hotfix plugin v' + currentVersion
+            name = currentVersion
+            released = new Date()
+        }
+    }
+}
+

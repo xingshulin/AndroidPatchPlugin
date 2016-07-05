@@ -1,1 +1,1 @@
-include ':sample', ':hotfix', ':hack', ':buildSrc'
+include ':sample', ':hotfix', ':hack', ':generator'
