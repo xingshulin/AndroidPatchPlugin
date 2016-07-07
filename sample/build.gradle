@@ -1,15 +1,13 @@
+import com.xingshulin.singularity.patch.PatchGeneratorPlugin
 buildscript {
     repositories {
         jcenter()
-    }
-    dependencies {
-        classpath 'com.xingshulin.singularity:patch-generator-plugin:0.1.8'
     }
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.getkeepsafe.dexcount'
-apply plugin: 'com.xingshulin.singularity.patch'
+apply plugin: PatchGeneratorPlugin
 
 android {
     compileSdkVersion 23
@@ -31,7 +29,6 @@ android {
 }
 
 patchCreator {
-    disabled = true
     accessKey = "ryxuDuc8S"
     filter = [
             "buildTimestamp": 1466505366262

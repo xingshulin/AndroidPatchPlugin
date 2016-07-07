@@ -5,6 +5,7 @@ import okhttp3.FormBody
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import org.gradle.api.GradleException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -44,6 +45,7 @@ class PatchUploader {
                 .header("Authorization", "Bearer ${securityKey}")
                 .build()
         def response = client.newCall(request).execute()
+        failBuildOnError(response)
         def jsonSlurper = new JsonSlurper()
         jsonSlurper.parse(response.body().byteStream())
     }
@@ -60,7 +62,7 @@ class PatchUploader {
         formBuilder.addEncoded("dexMapping", fileName)
         def request = builder.post(formBuilder.build()).build()
         def response = client.newCall(request).execute()
-
+        failBuildOnError(response)
         logger.debug(response.body().string())
     }
 
@@ -70,6 +72,7 @@ class PatchUploader {
                 .header("Authorization", "Bearer ${securityKey}")
         def response = client.newCall(builder.build()).execute()
 
+        failBuildOnError(response)
         String uploadToken = response.body().string()
         if (!uploadToken) {
             throw new GradleException('Cannot get upload token, please check your network.')
@@ -100,7 +103,7 @@ class PatchUploader {
         formBuilder.addEncoded("buildTimestamp", patchOptions.get(KEY_BUILD_TIMESTAMP))
         def request = builder.post(formBuilder.build()).build()
         def response = client.newCall(request).execute()
-
+        failBuildOnError(response)
         logger.debug(response.body().string())
     }
 
@@ -116,6 +119,7 @@ class PatchUploader {
                 .header('Host', 'upload.qiniu.com')
                 .post(body).build()
         def response = client.newCall(request).execute()
+        failBuildOnError(response)
         logger.debug(response.body().string())
     }
 
@@ -135,6 +139,7 @@ class PatchUploader {
         def patchedTxt = new File("${patchDir}/${mapping}")
         if (patchedTxt.exists()) patchedTxt.delete()
 
+        failBuildOnError(response)
         patchedTxt.bytes = response.body().bytes()
         logger.quiet("Downloaded mapping file ${patchedTxt.absolutePath}")
         return (HashMap<String, String>) Eval.me(patchedTxt.text)
@@ -144,5 +149,11 @@ class PatchUploader {
         String uploadToken = getToken("put", patchClasses.name)
         uploadFile(uploadToken, patchClasses)
         uploadBuildHistory(buildOptions, patchClasses.name)
+    }
+
+    private static void failBuildOnError(Response response) {
+        if (!response.successful) {
+            throw new GradleException(response.body().string())
+        }
     }
 }

@@ -20,7 +20,7 @@ dependencies {
     compile 'commons-codec:commons-codec:1.6'
 }
 
-def currentVersion = '0.1.8'
+def currentVersion = '0.1.9'
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
