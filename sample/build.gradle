@@ -1,12 +1,9 @@
 buildscript {
     repositories {
         jcenter()
-        maven {
-            url "https://dl.bintray.com/xingshulin/maven/"
-        }
     }
     dependencies {
-        classpath 'com.xingshulin.singularity:patch-generator-plugin:0.1.7'
+        classpath 'com.xingshulin.singularity:patch-generator-plugin:0.1.8'
     }
 }
 
@@ -34,6 +31,7 @@ android {
 }
 
 patchCreator {
+    disabled = true
     accessKey = "ryxuDuc8S"
     filter = [
             "buildTimestamp": 1466505366262
@@ -44,5 +42,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.3.0'
-    compile project(':hotfix')
+    compile 'com.xingshulin.singularity:hotfix-plugin:0.4.0'
 }
