@@ -1,5 +1,6 @@
 package com.xingshulin.singularity.patch
 
+import com.xingshulin.singularity.utils.DateUtils
 import groovy.json.JsonSlurper
 import okhttp3.FormBody
 import okhttp3.MultipartBody
@@ -171,7 +172,13 @@ class PatchUploader {
             return fatal('No build histories found, please adjust your filters.')
         }
         if (jsonArray.size() > 1) {
-            return fatal("Found more than one build histories, please adjust your filters. \r\n$jsonArray.toString()")
+            StringBuilder builder = new StringBuilder()
+            builder.append("\r\nAvailable build histories:").append("\r\n")
+            for (int i = 0; i < jsonArray.size(); i++) {
+                def item = jsonArray[i]
+                builder.append("buildTimestamp: ${item.buildTimestamp} - built at ${DateUtils.format(item.buildTimestamp)}").append("\r\n")
+            }
+            return fatal("Found ${jsonArray.size()} build histories, please adjust your filters. ${builder.toString()}")
         }
         null
     }
