@@ -29,9 +29,8 @@ android {
 }
 
 patchCreator {
-    accessKey = "ryxuDuc8S"
+    accessKey = "HJgxjqKj8"
     filter = [
-            "buildTimestamp": 1466505366262
     ]
 }
 

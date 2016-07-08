@@ -14,6 +14,6 @@ public class SampleApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        PatchManager.install(this, "rkdwOqLH");
+        PatchManager.install(this, "HJgoqKj8");
     }
 }
