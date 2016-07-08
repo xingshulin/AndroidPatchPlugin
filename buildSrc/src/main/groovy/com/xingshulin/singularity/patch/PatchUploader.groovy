@@ -31,7 +31,9 @@ class PatchUploader {
 
     static void setAccessKey(String accessKey) {
         if (accessKey == null || accessKey.trim().length() == 0) {
-            throw new GradleException('Need to specify more than 1 params')
+            def info = 'Access key cannot be null.'
+            logger.quiet(fatal(info))
+            throw new GradleException(info)
         }
         securityKey = accessKey
     }
@@ -46,8 +48,7 @@ class PatchUploader {
                 .build()
         def response = client.newCall(request).execute()
         failBuildOnError(response)
-        def jsonSlurper = new JsonSlurper()
-        jsonSlurper.parse(response.body().byteStream())
+        new JsonSlurper().parse(response.body().byteStream())
     }
 
     static void uploadBuildHistory(HashMap<String, String> buildHistorySettings, String fileName) {
@@ -75,7 +76,9 @@ class PatchUploader {
         failBuildOnError(response)
         String uploadToken = response.body().string()
         if (!uploadToken) {
-            throw new GradleException('Cannot get upload token, please check your network.')
+            def info = 'Cannot get upload token, please check your network.'
+            logger.quiet(fatal(info))
+            throw new GradleException(info)
         }
         uploadToken
     }
@@ -127,9 +130,13 @@ class PatchUploader {
         if (buildOptions.size() < 1) {
             throw new GradleException('Need to specify more than 1 params')
         }
-        Object object = downloadBuildHistories(buildOptions)
-        if (!object[0]) return new HashMap<String, String>(0)
-        String mapping = object[0]["dexMapping"]
+        Object result = downloadBuildHistories(buildOptions)
+        def resultMessage = validateBuildHistories(result)
+        if (resultMessage) {
+            throw new GradleException(resultMessage)
+        }
+        if (!result[0]) return new HashMap<String, String>(0)
+        String mapping = result[0]["dexMapping"]
         logger.debug("Found mapping file ${mapping}")
         def token = getToken("get", mapping)
 
@@ -153,7 +160,23 @@ class PatchUploader {
 
     private static void failBuildOnError(Response response) {
         if (!response.successful) {
-            throw new GradleException(response.body().string())
+            def error = response.body().string()
+            logger.quiet(fatal(error))
+            throw new GradleException(error)
         }
+    }
+
+    static String validateBuildHistories(Object jsonArray) {
+        if (jsonArray.size() == 0) {
+            return fatal('No build histories found, please adjust your filters.')
+        }
+        if (jsonArray.size() > 1) {
+            return fatal("Found more than one build histories, please adjust your filters. \r\n$jsonArray.toString()")
+        }
+        null
+    }
+
+    private static String fatal(String info) {
+        return "==================\r\nFatal: $info \r\n================="
     }
 }
