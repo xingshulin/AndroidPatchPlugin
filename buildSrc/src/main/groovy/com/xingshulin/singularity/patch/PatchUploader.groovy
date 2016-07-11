@@ -134,7 +134,7 @@ class PatchUploader {
         Object result = downloadBuildHistories(buildOptions)
         def resultMessage = validateBuildHistories(result)
         if (resultMessage) {
-            throw new GradleException(resultMessage)
+            logger.warn(resultMessage)
         }
         if (!result[0]) return new HashMap<String, String>(0)
         String mapping = result[0]["dexMapping"]
@@ -178,7 +178,7 @@ class PatchUploader {
                 def item = jsonArray[i]
                 builder.append("buildTimestamp: ${item.buildTimestamp} - built at ${DateUtils.format(item.buildTimestamp)}").append("\r\n")
             }
-            return fatal("Found ${jsonArray.size()} build histories, please adjust your filters. ${builder.toString()}")
+            return fatal("Found ${jsonArray.size()} build histories, the patch file may not be generated, please adjust your filters. ${builder.toString()}")
         }
         null
     }
