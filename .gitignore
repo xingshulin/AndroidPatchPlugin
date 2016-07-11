@@ -12,3 +12,4 @@ sample/src/main/gen
 git
 st
 generator/build/
+.gradletasknamecache
