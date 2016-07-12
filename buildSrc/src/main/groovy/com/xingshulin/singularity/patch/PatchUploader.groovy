@@ -1,6 +1,7 @@
 package com.xingshulin.singularity.patch
 
 import com.xingshulin.singularity.utils.DateUtils
+import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import okhttp3.FormBody
 import okhttp3.MultipartBody
@@ -49,7 +50,9 @@ class PatchUploader {
                 .build()
         def response = client.newCall(request).execute()
         failBuildOnError(response)
-        new JsonSlurper().parse(response.body().byteStream())
+        def result = response.body().string()
+        logger.quiet(JsonOutput.prettyPrint(result))
+        new JsonSlurper().parseText(result)
     }
 
     static void uploadBuildHistory(HashMap<String, String> buildHistorySettings, String fileName) {
@@ -132,10 +135,7 @@ class PatchUploader {
             throw new GradleException('Need to specify more than 1 params')
         }
         Object result = downloadBuildHistories(buildOptions)
-        def resultMessage = validateBuildHistories(result)
-        if (resultMessage) {
-            logger.warn(resultMessage)
-        }
+        logger.quiet(formatBuildHistories(result))
         if (!result[0]) return new HashMap<String, String>(0)
         String mapping = result[0]["dexMapping"]
         logger.debug("Found mapping file ${mapping}")
@@ -167,20 +167,11 @@ class PatchUploader {
         }
     }
 
-    static String validateBuildHistories(Object jsonArray) {
+    static String formatBuildHistories(Object jsonArray) {
         if (jsonArray.size() == 0) {
             return fatal('No build histories found, please adjust your filters.')
         }
-        if (jsonArray.size() > 1) {
-            StringBuilder builder = new StringBuilder()
-            builder.append("\r\nAvailable build histories:").append("\r\n")
-            for (int i = 0; i < jsonArray.size(); i++) {
-                def item = jsonArray[i]
-                builder.append("buildTimestamp: ${item.buildTimestamp} - built at ${DateUtils.format(item.buildTimestamp)}").append("\r\n")
-            }
-            return fatal("Found ${jsonArray.size()} build histories, the patch file may not be generated, please adjust your filters. ${builder.toString()}")
-        }
-        null
+        return fatal("Found ${jsonArray.size()} build histories, the patch file may not be generated, please adjust your filters.}")
     }
 
     private static String fatal(String info) {

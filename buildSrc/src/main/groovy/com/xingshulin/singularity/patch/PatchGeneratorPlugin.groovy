@@ -1,19 +1,20 @@
 package com.xingshulin.singularity.patch
 
+import com.xingshulin.singularity.utils.MapUtils
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import static com.xingshulin.singularity.patch.PatchUploader.*
 import static com.xingshulin.singularity.utils.AndroidUtil.dex
 import static com.xingshulin.singularity.utils.AndroidUtil.getAppInfo
 import static com.xingshulin.singularity.utils.ClassUtil.guessClassName
 import static com.xingshulin.singularity.utils.ClassUtil.patchClass
 import static com.xingshulin.singularity.utils.FileUtils.dirFilter
-import static com.xingshulin.singularity.utils.MapUtils.merge
-import static com.xingshulin.singularity.utils.MapUtils.nullSafePut
-import static PatchUploader.*
+import static com.xingshulin.singularity.utils.MapUtils.*
+import static com.xingshulin.singularity.utils.MapUtils.copy
 import static groovy.io.FileType.FILES
 import static java.lang.System.currentTimeMillis
 import static java.util.UUID.randomUUID
@@ -36,6 +37,10 @@ class PatchGeneratorPlugin implements Plugin<Project> {
                 logger.warn('Patch generation is disabled, will not create and upload patch files')
                 logger.warn('And apk created during this build CANNOT be patched in future')
                 return
+            }
+            if (project.patchCreator.buildExtra) {
+                def extra = project.patchCreator.buildExtra
+                copy(buildOptions, extra)
             }
 
             setAccessKey(project.patchCreator.accessKey)
