@@ -1,13 +1,8 @@
 package com.xingshulin.singularity.patch
 
-import com.xingshulin.singularity.utils.DateUtils
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
-import okhttp3.FormBody
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.*
 import org.gradle.api.GradleException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
