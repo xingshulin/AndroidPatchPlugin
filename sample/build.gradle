@@ -29,7 +29,7 @@ android {
 }
 
 patchCreator {
-    accessKey = "HJgxjqKj8"
+    accessKey = "BklV2jsQD"
     buildExtra = [
             "buildNumber": System.getenv("BUILD_NUMBER"),
             "buildUrl": System.getenv("BUILD_URL"),
