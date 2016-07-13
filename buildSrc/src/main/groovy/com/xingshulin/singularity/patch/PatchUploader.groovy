@@ -166,7 +166,7 @@ class PatchUploader {
         if (jsonArray.size() == 0) {
             return fatal('No build histories found, please adjust your filters.')
         }
-        return fatal("Found ${jsonArray.size()} build histories, the patch file may not be generated, please adjust your filters.}")
+        return fatal("Found ${jsonArray.size()} build histories, the patch file may not be generated, please adjust your filters.")
     }
 
     private static String fatal(String info) {
