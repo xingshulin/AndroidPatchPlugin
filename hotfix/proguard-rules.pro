@@ -16,3 +16,12 @@
 #   public *;
 #}
 -keep class com.xingshulin.singularity.hotfix.** { *;}
+-keep class kotlin.Metadata
+-keep class kotlin.jvm.internal.Intrinsics
+-keep class kotlin.io.FilesKt
+-keep class kotlin.TypeCastException
+-keep class kotlin.io.ByteStreamsKt
+-keep class kotlin.Unit
+-keep class kotlin.jvm.functions.Function0
+-keep class kotlin.jvm.internal.Lambda
+-keep class kotlin.concurrent.ThreadsKt
