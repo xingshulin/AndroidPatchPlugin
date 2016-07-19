@@ -1,1 +1,1 @@
-include ':sample', ':hotfix', ':hack'
+include ':sample', ':hotfix', ':hack', ':sampleWithMultidex'
