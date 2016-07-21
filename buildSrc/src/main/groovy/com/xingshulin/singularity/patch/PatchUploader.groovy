@@ -7,6 +7,7 @@ import org.gradle.api.GradleException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import static com.xingshulin.singularity.patch.PatchGeneratorPlugin.TAG
 import static java.net.URLEncoder.encode
 import static okhttp3.MediaType.parse
 import static okhttp3.RequestBody.create
@@ -126,12 +127,12 @@ class PatchUploader {
     }
 
     static HashMap<String, String> downloadBuildHistory(HashMap<String, String> buildOptions, String patchDir) {
-        if (buildOptions.size() < 1) {
-            throw new GradleException('Need to specify more than 1 params')
-        }
         Object result = downloadBuildHistories(buildOptions)
         logger.quiet(formatBuildHistories(result))
-        if (!result[0]) return new HashMap<String, String>(0)
+        if (!result[0] || result.size() > 1) {
+            return new HashMap<String, String>(0)
+        }
+
         String mapping = result[0]["dexMapping"]
         logger.debug("Found mapping file ${mapping}")
         def token = getToken("get", mapping)
@@ -166,7 +167,7 @@ class PatchUploader {
         if (jsonArray.size() == 0) {
             return fatal('No build histories found, please adjust your filters.')
         }
-        return fatal("Found ${jsonArray.size()} build histories, the patch file may not be generated, please adjust your filters.")
+        return fatal("Found ${jsonArray.size()} build histories.")
     }
 
     private static String fatal(String info) {
