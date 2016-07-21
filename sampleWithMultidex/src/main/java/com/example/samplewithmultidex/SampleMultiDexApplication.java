@@ -1,11 +1,10 @@
 package com.example.samplewithmultidex;
 
-import android.app.Application;
 import android.content.Context;
-
+import android.support.multidex.MultiDexApplication;
 import com.xingshulin.singularity.hotfix.PatchManager;
 
-public class MultiDexApplication extends Application {
+public class SampleMultiDexApplication extends MultiDexApplication {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
