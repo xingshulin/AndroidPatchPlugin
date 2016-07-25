@@ -7,7 +7,7 @@ import org.gradle.api.GradleException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import static com.xingshulin.singularity.patch.PatchGeneratorPlugin.TAG
+import static groovy.json.JsonOutput.toJson
 import static java.net.URLEncoder.encode
 import static okhttp3.MediaType.parse
 import static okhttp3.RequestBody.create
@@ -52,7 +52,7 @@ class PatchUploader {
     }
 
     static void uploadBuildHistory(HashMap<String, String> buildHistorySettings, String fileName) {
-        logger.quiet('Upload build params ' + buildHistorySettings.inspect())
+        logger.quiet('Upload build params ' + toJson(buildHistorySettings))
         def builder = new Request.Builder()
                 .url("${host}/buildHistories")
                 .header("Authorization", "Bearer ${securityKey}")
@@ -91,7 +91,7 @@ class PatchUploader {
     }
 
     static void uploadPatchInfo(Map<String, String> patchOptions, File patchFile) {
-        logger.quiet('Upload patch info ' + patchOptions.inspect())
+        logger.quiet('Upload patch info ' + toJson(patchOptions))
         def builder = new Request.Builder()
                 .url("${host}/patches")
                 .header("Authorization", "Bearer ${securityKey}")
@@ -144,9 +144,10 @@ class PatchUploader {
         if (patchedTxt.exists()) patchedTxt.delete()
 
         failBuildOnError(response)
-        patchedTxt.bytes = response.body().bytes()
+        def bytes = response.body().bytes()
+        patchedTxt.bytes = bytes
         logger.quiet("Downloaded mapping file ${patchedTxt.absolutePath}")
-        return (HashMap<String, String>) Eval.me(patchedTxt.text)
+        return (HashMap<String, String>) new JsonSlurper().parse(bytes)
     }
 
     static void saveBuildHistory(HashMap<String, String> buildOptions, File patchClasses) {

@@ -20,6 +20,7 @@ import static com.xingshulin.singularity.utils.FileUtils.copyFile
 import static com.xingshulin.singularity.utils.FileUtils.isJar
 import static com.xingshulin.singularity.utils.MapUtils.*
 import static groovy.io.FileType.FILES
+import static groovy.json.JsonOutput.toJson
 import static java.lang.System.currentTimeMillis
 import static java.util.UUID.randomUUID
 import static org.apache.commons.codec.digest.DigestUtils.shaHex
@@ -69,7 +70,7 @@ class PatchGeneratorPlugin implements Plugin<Project> {
                     Closure postPatchAction = getPostPatchAction(lastTransformedFiles)
                     patchClasses(transformTask, postPatchAction)
                     def patchedTxt = new File(patchRootDir.absolutePath + "/patch.dex.${randomUUID()}.txt")
-                    patchedTxt.text = includedFiles.inspect()
+                    patchedTxt.text = toJson(includedFiles)
                     saveBuildHistory(buildOptions, patchedTxt)
 
                     def patchFile = createRealPatch(project)
