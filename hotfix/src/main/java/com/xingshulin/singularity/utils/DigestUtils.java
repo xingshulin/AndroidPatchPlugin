@@ -1,7 +1,10 @@
 package com.xingshulin.singularity.utils;
 
+import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import static com.xingshulin.singularity.utils.IOUtils.closeQuietly;
 
 public class DigestUtils {
     private static final char[] DIGITS_LOWER = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
@@ -25,5 +28,26 @@ public class DigestUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String shaHex(File patchFile) {
+        ByteArrayOutputStream os = null;
+        BufferedInputStream is = null;
+        try {
+            os = new ByteArrayOutputStream();
+            is = new BufferedInputStream(new FileInputStream(patchFile));
+            byte[] buffer = new byte[1024];
+            while (is.read(buffer) != -1) {
+                os.write(buffer);
+            }
+            os.flush();
+            return shaHex(os.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        } finally {
+            closeQuietly(is);
+            closeQuietly(os);
+        }
     }
 }
