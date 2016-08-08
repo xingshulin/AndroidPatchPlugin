@@ -26,10 +26,10 @@ android {
 patchCreator {
     accessKey = "ByeqysBjw"
     buildExtra = [
-            "buildNumber": System.getenv("BUILD_NUMBER"),
-            "buildUrl"   : System.getenv("BUILD_URL"),
-            "gitLog"     : System.getenv("GIT_LOG"),
-            "gitCommit"  : System.getenv("GIT_COMMIT"),
+            "buildNumber": "1",
+            "buildUrl"   : "http://jenkins.com",
+            "gitLog"     : "GIT_LOG",
+            "gitCommit"  : "GIT_COMMIT",
     ]
     filter = [
     ]
