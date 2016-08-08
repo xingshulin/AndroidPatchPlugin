@@ -24,13 +24,10 @@ public class IOUtils {
             out = new BufferedOutputStream(new FileOutputStream(patchFile));
 
             byte[] buffer = new byte[2048];
-            int totalSize = 0;
             int length;
             while ((length = in.read(buffer)) != -1) {
-                totalSize += length;
                 out.write(buffer, 0, length);
             }
-            System.out.println("totalSize = " + totalSize);
             out.flush();
         } catch (Exception e) {
             e.printStackTrace();
