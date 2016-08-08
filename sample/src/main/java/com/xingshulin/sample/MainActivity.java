@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     static {
-        Log.d("hotfix", "Current version 2");
+        Log.d("hotfix", "Current version 1");
     }
 
     @Override
@@ -15,6 +15,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         TextView textView = (TextView) findViewById(R.id.text_view);
-        textView.setText("Hello World version 2!");
+        textView.setText("Hello World version 1!");
     }
 }
