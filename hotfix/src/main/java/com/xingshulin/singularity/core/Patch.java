@@ -1,7 +1,6 @@
 package com.xingshulin.singularity.core;
 
 import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
 import com.xingshulin.singularity.utils.Configs;
 import dalvik.system.DexClassLoader;
@@ -9,7 +8,9 @@ import dalvik.system.PathClassLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 import static com.xingshulin.singularity.utils.ArrayUtils.concat;
 import static com.xingshulin.singularity.utils.Configs.validatePatch;
@@ -21,7 +22,7 @@ public class Patch {
     public static final String TAG = "hotfix";
     static final String DOMAIN = "http://singularity.xingshulin.com";
     static final String KEY_URI = "uri";
-    static final String KEY_SHA = "sha";
+    static final String KEY_SHA = "sha1";
 
     public static void checkForUpdates(Context context) {
         new DownloadThread(context).start();
@@ -32,33 +33,6 @@ public class Patch {
 
         File apk = copyHelperApk(context, Configs.getDefaultPatchDir(context));
         loadPatch(apk.getAbsolutePath(), Configs.getDefaultPatchOptDir(context).getAbsolutePath());
-
-        try {
-            FileInputStream fileInputStream = new FileInputStream(apk);
-            BufferedInputStream in = new BufferedInputStream(fileInputStream);
-            byte[] buffer = new byte[1024];
-            File file = new File(Environment.getExternalStorageDirectory(), "demo.apk");
-            if (file.exists()) {
-                file.delete();
-            }
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            BufferedOutputStream os = new BufferedOutputStream(fileOutputStream);
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                os.write(buffer, 0, read);
-            }
-            os.flush();
-            os.close();
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            getPathClassLoader().loadClass("com.xingshulin.singularity.Hack");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     public static void discoverAndApply(Context context) {
