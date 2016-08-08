@@ -41,7 +41,7 @@ public class Configs {
         return preferences.getString(KEY_TOKEN, "");
     }
 
-    public static void saveHotfixToken(Context context, String token) {
+    private static void saveHotfixToken(Context context, String token) {
         context.getSharedPreferences(KEY_HOTFIX, Context.MODE_PRIVATE)
                 .edit().putString(KEY_TOKEN, token).apply();
     }
@@ -53,7 +53,7 @@ public class Configs {
         getDefaultPatchOptDir(context).mkdirs();
     }
 
-    public static File getPatchRootDir(Context context) {
+    private static File getPatchRootDir(Context context) {
         return new File(format("%s/hotfix/", context.getFilesDir().getAbsolutePath()));
     }
 
