@@ -6,7 +6,7 @@ import java.security.NoSuchAlgorithmException;
 
 import static com.xingshulin.singularity.utils.IOUtils.closeQuietly;
 
-public class DigestUtils {
+class DigestUtils {
     private static final char[] DIGITS_LOWER = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     private static char[] encodeHex(byte[] data) {
@@ -20,7 +20,7 @@ public class DigestUtils {
         return out;
     }
 
-    public static String shaHex(byte[] data) {
+    static String shaHex(byte[] data) {
         try {
             MessageDigest sha1 = MessageDigest.getInstance("SHA");
             return new String(encodeHex(sha1.digest(data)));
@@ -30,15 +30,16 @@ public class DigestUtils {
         return null;
     }
 
-    public static String shaHex(File patchFile) {
+    static String shaHex(File patchFile) {
         ByteArrayOutputStream os = null;
         BufferedInputStream is = null;
         try {
             os = new ByteArrayOutputStream();
             is = new BufferedInputStream(new FileInputStream(patchFile));
+            int length;
             byte[] buffer = new byte[1024];
-            while (is.read(buffer) != -1) {
-                os.write(buffer);
+            while ((length = is.read(buffer)) != -1) {
+                os.write(buffer, 0, length);
             }
             os.flush();
             return shaHex(os.toByteArray());
