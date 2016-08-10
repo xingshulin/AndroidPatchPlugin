@@ -186,7 +186,8 @@ class PatchGeneratorPlugin implements Plugin<Project> {
 
         def starts = [
                 'com/xingshulin/singularity/',
-                'android/support/'
+                'android/support/',
+                'com/android/'
         ]
         def startsWithFilter = { excluded ->
             classFullPath.startsWith(excluded)
