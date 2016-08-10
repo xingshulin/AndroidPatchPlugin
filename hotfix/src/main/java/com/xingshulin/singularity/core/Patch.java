@@ -68,8 +68,8 @@ public class Patch {
         setField(pathList, pathList.getClass(), "dexElements", concat);
     }
 
-    private static PathClassLoader getPathClassLoader() {
-        return (PathClassLoader)Patch.class.getClassLoader();
+    private static ClassLoader getPathClassLoader() {
+        return Patch.class.getClassLoader();
     }
 
     private static File copyHelperApk(Context context, File patchDir) {
