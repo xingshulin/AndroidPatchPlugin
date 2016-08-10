@@ -9,6 +9,8 @@ public class LibraryActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(new TextView(this));
+        TextView view = new TextView(this);
+        view.setText("Default Text from library");
+        setContentView(view);
     }
 }

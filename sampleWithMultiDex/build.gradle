@@ -26,7 +26,7 @@ android {
 patchCreator {
     accessKey = "ByeqysBjw"
     buildExtra = [
-            "buildNumber": "1",
+            "buildNumber": "2",
             "buildUrl"   : "http://jenkins.com",
             "gitLog"     : "GIT_LOG",
             "gitCommit"  : "GIT_COMMIT",
