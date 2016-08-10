@@ -2,10 +2,18 @@
 android patch plugin
 Usage
 ====
-The android library and gradle plugin for android hotfix.
+Please refer to sample module.
 
-For backend, please refer to [https://github.com/xingshulin/singularity]()
+Versioning
+====
+Please refer to semver [standard](http://semver.org)
 
-Caution
-========
-The project is still working in progress, if you are interested in becoming a contributor, please mail qinhan@xingshulin.com, I am very happy to share the ideas and plans
+Note
+====
+To release a new generator plugin, following steps will be needed
+* Add buildSrc to settings.gradle
+* Update plugin version
+* ./gradlew clean buildSrc:bintrayUpload
+* After upload, discard changes in settings.gradle
+* Commit other changes
+
