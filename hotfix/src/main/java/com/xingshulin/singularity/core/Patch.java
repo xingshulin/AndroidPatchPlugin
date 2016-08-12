@@ -1,6 +1,8 @@
 package com.xingshulin.singularity.core;
 
+import android.app.ActivityManager;
 import android.content.Context;
+import android.os.Process;
 import android.util.Log;
 import com.xingshulin.singularity.utils.Configs;
 import dalvik.system.DexClassLoader;
@@ -11,6 +13,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import static com.xingshulin.singularity.utils.ArrayUtils.concat;
 import static com.xingshulin.singularity.utils.Configs.validatePatch;
@@ -25,17 +28,26 @@ public class Patch {
     static final String KEY_SHA = "sha1";
 
     public static void checkForUpdates(Context context) {
-        new DownloadThread(context).start();
+        if (isOnMainProcess(context)) {
+            new DownloadThread(context).start();
+        }
     }
 
     public static void configure(Context context, String token) {
-        Configs.init(context, token);
+        if (isOnMainProcess(context)) {
+            Configs.init(context, token);
 
+            applyBasePatch(context);
+            discoverAndApply(context);
+        }
+    }
+
+    private static void applyBasePatch(Context context) {
         File apk = copyHelperApk(context, Configs.getDefaultPatchDir(context));
         loadPatch(apk.getAbsolutePath(), Configs.getDefaultPatchOptDir(context).getAbsolutePath());
     }
 
-    public static void discoverAndApply(Context context) {
+    private static void discoverAndApply(Context context) {
         File patchFile = Configs.getPatchFile(context);
         if (!patchFile.exists()) {
             return;
@@ -91,4 +103,19 @@ public class Patch {
             closeQuietly(inputStream);
         }
     }
+
+    private static boolean isOnMainProcess(Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> infos = manager.getRunningAppProcesses();
+        if (infos == null) {
+            return false;
+        }
+        for (ActivityManager.RunningAppProcessInfo info : infos) {
+            if (info.pid == Process.myPid()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
