@@ -7,7 +7,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.support.annotation.Nullable;
-import android.widget.Toast;
 
 import static android.widget.Toast.LENGTH_SHORT;
 import static android.widget.Toast.makeText;
