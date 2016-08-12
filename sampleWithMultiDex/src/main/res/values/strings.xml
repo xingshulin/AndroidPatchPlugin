@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">sampleWithMultiDex</string>
     <string name="open_library">Open library</string>
+    <string name="ping_messenger_service">Ping messenger service</string>
 </resources>

@@ -18,6 +18,12 @@
             android:layout_height="wrap_content"/>
     <Button android:id="@+id/library"
             android:text="@string/open_library"
+            android:layout_marginTop="1dp"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"/>
+    <Button android:id="@+id/messenger"
+            android:text="@string/ping_messenger_service"
+            android:layout_marginTop="1dp"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"/>
 </LinearLayout>
