@@ -34,12 +34,10 @@ public class Patch {
     }
 
     public static void configure(Context context, String token) {
-        if (isOnMainProcess(context)) {
-            Configs.init(context, token);
+        Configs.init(context, token);
 
-            applyBasePatch(context);
-            discoverAndApply(context);
-        }
+        applyBasePatch(context);
+        discoverAndApply(context);
     }
 
     private static void applyBasePatch(Context context) {
