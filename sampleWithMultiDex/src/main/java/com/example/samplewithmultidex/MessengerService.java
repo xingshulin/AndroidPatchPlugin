@@ -32,7 +32,6 @@ public class MessengerService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        makeText(getApplicationContext(), "Binding MessengerService...", LENGTH_SHORT).show();
         return messenger.getBinder();
     }
 }

@@ -17,6 +17,7 @@
             </intent-filter>
         </activity>
         <service android:name=".MessengerService" android:process=":sample_service"/>
+        <service android:name=".AIDLService" android:process=":sample_service"/>
     </application>
 
 </manifest>

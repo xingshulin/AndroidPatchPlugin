@@ -26,4 +26,10 @@
             android:layout_marginTop="1dp"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"/>
+    <Button android:id="@+id/aidl_service"
+            android:text="@string/ping_aidl_service"
+            android:layout_marginTop="1dp"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"/>
+
 </LinearLayout>
