@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.example.samplelibrary.LibraryActivity;
 
+import static android.widget.Toast.LENGTH_SHORT;
 import static android.widget.Toast.makeText;
 import static com.example.samplewithmultidex.IWelcomeService.Stub.asInterface;
 import static com.example.samplewithmultidex.MessengerService.MESSAGE_TYPE_WELCOME;
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (serviceMessenger == null) {
-                    makeText(MainActivity.this, "Service is not bound", Toast.LENGTH_SHORT).show();
+                    makeText(MainActivity.this, "Service is not bound", LENGTH_SHORT).show();
                     return;
                 }
                 Message message = Message.obtain();
@@ -102,12 +103,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (welcomeService == null) {
-                    makeText(MainActivity.this, "Service is not bound", Toast.LENGTH_SHORT).show();
+                    makeText(MainActivity.this, "Service is not bound", LENGTH_SHORT).show();
                     return;
                 }
                 try {
                     String welcome = welcomeService.welcome();
-                    makeText(MainActivity.this, welcome, Toast.LENGTH_LONG).show();
+                    makeText(MainActivity.this, welcome, LENGTH_SHORT).show();
                 } catch (RemoteException ignored) {
                 }
             }
