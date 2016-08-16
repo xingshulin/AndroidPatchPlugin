@@ -8,7 +8,6 @@ import android.os.*;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 import com.example.samplelibrary.LibraryActivity;
 
 import static android.widget.Toast.LENGTH_SHORT;
@@ -107,7 +106,8 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 try {
-                    String welcome = welcomeService.welcome();
+                    Person person = new Person("Xiaofan", "Zhang", 16);
+                    String welcome = welcomeService.welcome(person);
                     makeText(MainActivity.this, welcome, LENGTH_SHORT).show();
                 } catch (RemoteException ignored) {
                 }

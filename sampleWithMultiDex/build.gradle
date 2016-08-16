@@ -12,8 +12,8 @@ android {
         minSdkVersion 15
         targetSdkVersion 23
         multiDexEnabled true
-        versionCode 3
-        versionName "2.0"
+        versionCode 4
+        versionName "4.0"
     }
     buildTypes {
         release {
@@ -26,7 +26,7 @@ android {
 patchCreator {
     accessKey = "ByeqysBjw"
     buildExtra = [
-            "buildNumber": "4",
+            "buildNumber": "5",
             "buildUrl"   : "http://jenkins.com",
             "gitLog"     : "GIT_LOG",
             "gitCommit"  : "GIT_COMMIT",
