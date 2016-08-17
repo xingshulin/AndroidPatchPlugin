@@ -90,6 +90,7 @@ class PatchGeneratorPlugin implements Plugin<Project> {
             return { String fileName, String fileSha, byte[] fileInBytes -> }
         }
         return { String fileName, String fileSha, byte[] fileInBytes ->
+
             if (fileHasChanged(fileName, fileSha, lastTransformedFiles)) {
                 copyFile(fileName, fileInBytes, patchOutputDir)
             }
@@ -132,7 +133,10 @@ class PatchGeneratorPlugin implements Plugin<Project> {
                 }
 
                 def className = guessFileName(fileOrDir, file)
-                byte[] bytes = getFileBytes(file, className)
+                if (shouldSkipTransform(className)) {
+                    return
+                }
+                def bytes = patchClass(file)
                 def sha = shaHex(bytes)
                 includedFiles.put(className, sha)
                 postPatchAction(className, sha, bytes)
@@ -152,13 +156,11 @@ class PatchGeneratorPlugin implements Plugin<Project> {
             def bytes = jar.getInputStream(entry).bytes
             if (!shouldSkipTransform(entry.name)) {
                 bytes = referHackWhenInit(bytes)
+                def hex = shaHex(bytes)
+                includedFiles.put(entry.name, hex)
+                postPatchAction(entry.name, hex, bytes)
             }
             jos.write(bytes)
-            if (!entry.directory) {
-                def sha = shaHex(bytes)
-                includedFiles.put(entry.name, sha)
-                postPatchAction(entry.name, sha, bytes)
-            }
             jos.closeEntry()
         }
         jos.close()
@@ -173,10 +175,7 @@ class PatchGeneratorPlugin implements Plugin<Project> {
     }
 
     private byte[] getFileBytes(File file, String className) {
-        if (shouldSkipTransform(className)) {
-            return file.bytes
-        }
-        return patchClass(file)
+
     }
 
     private boolean shouldSkipTransform(classFullPath) {
