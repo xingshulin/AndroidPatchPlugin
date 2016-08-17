@@ -110,7 +110,7 @@ public class Patch {
         }
         for (ActivityManager.RunningAppProcessInfo info : infos) {
             if (info.pid == Process.myPid()) {
-                return true;
+                return context.getPackageName().equalsIgnoreCase(info.processName);
             }
         }
         return false;
