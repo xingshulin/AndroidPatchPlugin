@@ -6,7 +6,6 @@ import android.os.Process;
 import android.util.Log;
 import com.xingshulin.singularity.utils.Configs;
 import dalvik.system.DexClassLoader;
-import dalvik.system.PathClassLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,8 +35,12 @@ public class Patch {
     public static void configure(Context context, String token) {
         Configs.init(context, token);
 
-        applyBasePatch(context);
-        discoverAndApply(context);
+        try {
+            applyBasePatch(context);
+            discoverAndApply(context);
+        } catch (Exception e) {
+            Log.w(TAG, "Configure failed, found error when applying patch: " + e.getMessage(), e);
+        }
     }
 
     private static void applyBasePatch(Context context) {
