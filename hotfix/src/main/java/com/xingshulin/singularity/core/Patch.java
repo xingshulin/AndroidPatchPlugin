@@ -24,7 +24,7 @@ public class Patch {
     public static final String TAG = "hotfix";
     static final String DOMAIN = "http://singularity.xingshulin.com";
     static final String KEY_URI = "uri";
-    static final String KEY_SHA = "sha1";
+    public static final String KEY_SHA = "sha1";
 
     public static void checkForUpdates(Context context) {
         if (isOnMainProcess(context)) {

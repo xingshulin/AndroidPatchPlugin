@@ -16,4 +16,14 @@ public class ContextUtils {
         }
         return "";
     }
+
+    public static String appVersionName(Context context) {
+        PackageManager packageManager = context.getPackageManager();
+        try {
+            return packageManager.getPackageInfo(context.getPackageName(), GET_CONFIGURATIONS).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 }

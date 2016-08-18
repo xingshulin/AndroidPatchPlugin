@@ -39,7 +39,7 @@ class DownloadThread extends Thread {
     private void doDownload(JSONObject hotfix, String token) {
         try {
             String fileDownloadToken = format("%s/tokens?type=get&key=%s", Patch.DOMAIN, hotfix.getString(Patch.KEY_URI));
-            String patchUrl = readText(fileDownloadToken, token);
+            String patchUrl = readText(this.context, fileDownloadToken, token);
             Log.d(TAG, "downloading patch file " + patchUrl);
             File patchFile = getPatchFile(context);
             save(new URL(patchUrl).openStream(), patchFile);
@@ -70,7 +70,7 @@ class DownloadThread extends Thread {
 
     private JSONObject fetchHotfixInfo(String address, String token) {
         try {
-            JSONArray array = new JSONArray(readText(address, token));
+            JSONArray array = new JSONArray(readText(this.context, address, token));
             return array.length() > 0 ? array.getJSONObject(0) : new JSONObject();
         } catch (JSONException e) {
             Log.w(TAG, e.getMessage(), e);
