@@ -18,6 +18,19 @@ import static com.example.samplewithmultidex.MessengerService.MESSAGE_TYPE_WELCO
 public class MainActivity extends AppCompatActivity {
     private Messenger serviceMessenger;
     private IWelcomeService welcomeService;
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MessengerService.MESSAGE_TYPE_WELCOME:
+                    makeText(MainActivity.this, msg.getData().getString(MessengerService.KEY_WELCOME), LENGTH_SHORT).show();
+                    return;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    };
+    private Messenger messageReceiver = new Messenger(handler);
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -79,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Message message = Message.obtain();
                 message.what = MESSAGE_TYPE_WELCOME;
+                message.replyTo = messageReceiver;
                 try {
                     serviceMessenger.send(message);
                 } catch (Exception ignored) {
