@@ -36,17 +36,6 @@ public class Configs {
         return preferences.getString(KEY_TOKEN, "");
     }
 
-    private static void ensureDirs(Context context) {
-        getPatchRootDir(context).mkdirs();
-        getPatchFile(context).getParentFile().mkdirs();
-        getDefaultPatchDir(context).mkdirs();
-        getDefaultPatchOptDir(context).mkdirs();
-    }
-
-    private static File getPatchRootDir(Context context) {
-        return new File(format("%s/hotfix/", context.getFilesDir().getAbsolutePath()));
-    }
-
     public static File getPatchFile(Context context) {
         return new File(format("%s/%s/", getPatchRootDir(context).getAbsolutePath(), appVersionCode(context)), PATCH_JAR);
     }
@@ -87,11 +76,6 @@ public class Configs {
         return deviceId;
     }
 
-    private static void saveHotfixToken(Context context, String token) {
-        context.getSharedPreferences(KEY_HOTFIX, Context.MODE_PRIVATE)
-                .edit().putString(KEY_TOKEN, token).apply();
-    }
-
     public static String getHotfixSha(Context context) {
         try {
             JSONObject hotfix = Configs.getHotfixInfo(context);
@@ -120,5 +104,21 @@ public class Configs {
             Log.w(TAG, e);
         }
         return new JSONObject();
+    }
+
+    private static void saveHotfixToken(Context context, String token) {
+        context.getSharedPreferences(KEY_HOTFIX, Context.MODE_PRIVATE)
+                .edit().putString(KEY_TOKEN, token).apply();
+    }
+
+    private static void ensureDirs(Context context) {
+        getPatchRootDir(context).mkdirs();
+        getPatchFile(context).getParentFile().mkdirs();
+        getDefaultPatchDir(context).mkdirs();
+        getDefaultPatchOptDir(context).mkdirs();
+    }
+
+    private static File getPatchRootDir(Context context) {
+        return new File(format("%s/hotfix/", context.getFilesDir().getAbsolutePath()));
     }
 }
