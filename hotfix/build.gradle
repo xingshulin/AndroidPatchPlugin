@@ -37,7 +37,7 @@ dependencies {
 
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
-def currentVersion = "1.0.3"
+def currentVersion = "1.0.4"
 
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
