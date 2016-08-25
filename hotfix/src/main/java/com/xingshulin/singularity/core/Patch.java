@@ -6,8 +6,6 @@ import android.os.Process;
 import android.util.Log;
 import com.xingshulin.singularity.utils.Configs;
 import dalvik.system.DexClassLoader;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +13,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import static com.xingshulin.singularity.utils.ArrayUtils.concat;
-import static com.xingshulin.singularity.utils.Configs.validatePatch;
+import static com.xingshulin.singularity.utils.Configs.*;
 import static com.xingshulin.singularity.utils.IOUtils.closeQuietly;
 import static com.xingshulin.singularity.utils.IOUtils.save;
 import static com.xingshulin.singularity.utils.ReflectionUtils.*;
@@ -33,8 +31,7 @@ public class Patch {
     }
 
     public static void configure(Context context, String token) {
-        Configs.init(context, token);
-
+        init(context, token);
         try {
             applyBasePatch(context);
             discoverAndApply(context);
@@ -49,20 +46,14 @@ public class Patch {
     }
 
     private static void discoverAndApply(Context context) {
-        File patchFile = Configs.getPatchFile(context);
+        File patchFile = getPatchFile(context);
         if (!patchFile.exists()) {
             return;
         }
-        JSONObject hotfix = Configs.getHotfixInfo(context);
-        String sha1 = "";
-        try {
-            sha1 = hotfix.getString(Patch.KEY_SHA);
-        } catch (JSONException e) {
-            Log.w(TAG, e.getMessage(), e);
-        }
-        if (validatePatch(patchFile, sha1)) {
+        if (validatePatch(patchFile, getHotfixSha(context))) {
             apply(patchFile);
         } else {
+            resetHotfixInfo(context);
             patchFile.delete();
         }
     }

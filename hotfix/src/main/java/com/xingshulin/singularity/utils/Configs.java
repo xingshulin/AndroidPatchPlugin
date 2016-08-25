@@ -26,17 +26,6 @@ public class Configs {
     private static final String KEY_DEVICE_ID = "device.id";
     private static String deviceId = null;
 
-    public static JSONObject getHotfixInfo(Context context) {
-        SharedPreferences preferences = context.getSharedPreferences(KEY_HOTFIX, Context.MODE_PRIVATE);
-        String json = preferences.getString(KEY_PATCH, "{}");
-        try {
-            return new JSONObject(json);
-        } catch (JSONException e) {
-            Log.w(TAG, e);
-        }
-        return new JSONObject();
-    }
-
     public static void saveHotfixInfo(Context context, JSONObject hotfix) {
         SharedPreferences preferences = context.getSharedPreferences(KEY_HOTFIX, Context.MODE_PRIVATE);
         preferences.edit().putString(KEY_PATCH, hotfix.toString()).apply();
@@ -85,7 +74,7 @@ public class Configs {
         return dexOpt;
     }
 
-    public static String getDeviceId(Context context) {
+    static String getDeviceId(Context context) {
         if (deviceId != null) {
             return deviceId;
         }
@@ -111,5 +100,25 @@ public class Configs {
             Log.w(TAG, e.getMessage(), e);
         }
         return "(none)";
+    }
+
+    public static void resetHotfixInfo(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(KEY_HOTFIX, Context.MODE_PRIVATE);
+        preferences.edit().remove(KEY_PATCH).apply();
+    }
+
+    public static boolean localPatchIsValid(Context context) {
+        return validatePatch(getPatchFile(context), getHotfixSha(context));
+    }
+
+    private static JSONObject getHotfixInfo(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(KEY_HOTFIX, Context.MODE_PRIVATE);
+        String json = preferences.getString(KEY_PATCH, "{}");
+        try {
+            return new JSONObject(json);
+        } catch (JSONException e) {
+            Log.w(TAG, e);
+        }
+        return new JSONObject();
     }
 }

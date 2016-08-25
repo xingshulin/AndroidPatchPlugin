@@ -55,17 +55,9 @@ class DownloadThread extends Thread {
     }
 
     private boolean shouldDownload(JSONObject hotfix) {
-        JSONObject existed = Configs.getHotfixInfo(context);
-        try {
-            return !hotfix.getString(Patch.KEY_SHA).equalsIgnoreCase(existed.getString(Patch.KEY_SHA));
-        } catch (JSONException e) {
-            Log.w(TAG, e.getMessage(), e);
-        }
-        return true;
-    }
-
-    private boolean isValid(JSONObject hotfix) {
-        return hotfix.has(Patch.KEY_URI) && hotfix.has(Patch.KEY_SHA);
+        String sha = getSha(hotfix);
+        boolean shouldNot = sha.equalsIgnoreCase(getHotfixSha(context)) && localPatchIsValid(context);
+        return !shouldNot;
     }
 
     private JSONObject fetchHotfixInfo(String address, String token) {
@@ -76,6 +68,19 @@ class DownloadThread extends Thread {
             Log.w(TAG, e.getMessage(), e);
         }
         return new JSONObject();
+    }
+
+    private static String getSha(JSONObject hotfix) {
+        try {
+            return hotfix.getString(Patch.KEY_SHA);
+        } catch (JSONException e) {
+            Log.w(TAG, e.getMessage(), e);
+        }
+        return "(none)";
+    }
+
+    private static boolean isValid(JSONObject hotfix) {
+        return hotfix.has(Patch.KEY_URI) && hotfix.has(Patch.KEY_SHA);
     }
 
 }
